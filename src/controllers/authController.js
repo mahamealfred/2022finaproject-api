@@ -1,20 +1,18 @@
 import Models from "../database/models";
 import bcrypt from "bcrypt";
 import { decode, encode } from "../helpers/jwtTokenizer";
-import jwt from "jsonwebtoken";
+
 
 import dotenv from "dotenv";
-
-const mailgun = require("mailgun-js");
-const DOMAIN ="sandbox518fbe58df344e2aaea9e7a79460f29b.mailgun.org";
-const mg = mailgun({ apiKey: process.env.MAILGUN_API_KEY, domain: DOMAIN });
+import sgMail from "@sendgrid/mail";
+//const mailgun = require("mailgun-js");
 
 
 
 dotenv.config();
 
 const { users } = Models;
-
+ sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 
 class authController {
@@ -37,25 +35,45 @@ class authController {
           isActive:false,
           password: hashedPassword,
         });
-       // const token = await encode({ email });
+      
+       const token = await encode({ email });
         const data = {
-          from: 'QualityEducationBooster@reb.com',
+          from: 'mahamealfred@gmail.com',
           to: email,
-          subject: 'Hello',
-          text: 'Testing some Mailgun awesomness!'
-        };
-    
-        mg.messages().send(data, function (error, body) {
-          console.log(body);
-          if (error) {
-          console.log(error)
-          }
-         
-        });
+          subject: 'REB-QualityEducation Activation Email.',
+          text: `
+          Hello, Thanks for registering on our site.
+          Please copy and past the address bellow to activate your account.
+          http://${process.env.CLIENT_URL}/auth/activate-email/${token}
+          `,
+          html:`
+          <h1>Hello ${fullname},</h1>
+          <p>Thanks for registering on our site.</p>
+          <p>Please click the link below to activate your account.</p>
+          <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
+          `
+        }
+        try{
+          sgMail.send(data, function (error, body) {
+            console.log(body);
+            if (error) {
+            console.log(error)
+            }
+            else{
+              console.log("Email sent successful");
+            }
+           
+          });
+        }
+        catch(error){
+          console.log("something want wrong ");
+        }
+        
         return res.status(200).json({
           status: 200,
           message: "User have been created Successfully!",
         });
+       
       } catch (error) {
         return res.status(500).json({
           status: 500,
@@ -65,41 +83,41 @@ class authController {
   }
 
   static async login(req, res) {
-    
-    const { email, password } = req.body;
-   
-    if (!req.user) {
-      return res.status(404).json({
-        status: 404,
-        message: "User not found",
-      });
-     
-    }
-    const dbEmail = req.user.email;
-    const dbPasword = req.user.password;
-    const decreptedPassword = await bcrypt.compare(password, dbPasword);
-    if (dbEmail == email) {
-       if (decreptedPassword) {
-        const token = await encode({ email });
-        return res.status(200).json({
-          status: 200,
-          mesage: "User logged Successfull!",
-          data: {
-            user: req.user,
-            token,
-          },
+    try {
+      const { email, password } = req.body;
+      if (!req.user) {
+        return res.status(404).json({
+          status: 404,
+          mesage: "User not found",
         });
       }
+      const dbEmail = req.user.email;
+      const dbPasword = req.user.password;
+
+      const decreptedPassword = await bcrypt.compare(password, dbPasword);
+      if (dbEmail == email) {
+        if (decreptedPassword) {
+          const token = await encode({ email });
+          return res.status(200).json({
+            status: 200,
+            mesage: "User logged with Token",
+            data: {
+              user: req.user,
+              token,
+            },
+          });
+        }
+      }
+      return res.status(401).json({
+        status: 401,
+        message: "Password is not correct",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: "Server error" + error.message,
+      });
     }
-    return res.status(401).json({
-      status: 401,
-      message: "Password is not correct",
-    });
-  } catch (error) {
-    return res.status(500).json({
-      status: 500,
-      message: "Server error" + error.message,
-    });
   }
   
 
@@ -165,7 +183,27 @@ class authController {
         .json({ status: 500, message: "server error" + error.message });
     }
   }
+  static async activateAccount(req, res) {
+    try {
+      const { token } = req.params;
+      const { email } = await decode(token)
 
+      // update status to active
+      let updatedEmail = await users.update({isActive:true}, { where:{email}})
+
+      return res.status(200).json({
+          status: 200,
+          datta: updatedEmail,
+          message: "User activated successfully!",
+        });
+
+    } catch (error) {
+      return res.status(500).json({
+          status: 500,
+          message:  error.message,
+        });
+      }
+    }
   }
 
 export default authController;

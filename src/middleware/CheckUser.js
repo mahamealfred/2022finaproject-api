@@ -14,4 +14,3 @@ const CheckUser = async (req, res, next) => {
 
 export default CheckUser;
 
-// findOne({ where: { email } });

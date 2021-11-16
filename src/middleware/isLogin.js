@@ -2,7 +2,7 @@ import Models from "../database/models";
 import { decode } from "../helpers/jwtTokenizer";
 const { users } = Models;
 
-const isLogin = async (req, res, next) => {
+const isLogin = async (req, res,next) => {
   const Token = req.headers["token"];
   if (!Token) {
     return res.status(403).json({
@@ -17,7 +17,7 @@ const isLogin = async (req, res, next) => {
   if (!found) {
     return res.status(404).json({
       status: 404,
-      message: "User nott found",
+      message: "User not found",
     });
   }
 req.user=found;

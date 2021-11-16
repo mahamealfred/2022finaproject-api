@@ -11,7 +11,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-    }
+      students.belongsTo(models.schools, {
+        foreignKey:'schoolId',
+        onDelete:'CASCADE',
+        onUpdate:'CASCADE',
+      });
+      students.hasMany(models.results,{
+        foreignKey:'studentId',
+        onDelete:'CASCADE',
+        onUpdate:'CASCADE',
+      });
+     
+    
+  }
   };
   students.init({
     firstname: DataTypes.STRING,
