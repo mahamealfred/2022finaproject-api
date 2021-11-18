@@ -15,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
         onDelete:'CASCADE',
         onUpdate:'CASCADE',
       });
+      schools.hasMany(models.users,{
+        foreignKey:'schoolId',
+        onDelete:'CASCADE',
+        onUpdate:'CASCADE',
+      });
     }
     
   };

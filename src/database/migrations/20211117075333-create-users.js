@@ -26,6 +26,10 @@ module.exports = {
       role: {
         type: Sequelize.STRING
       },
+      resetlink: {
+        type: Sequelize.STRING,
+        default:''
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

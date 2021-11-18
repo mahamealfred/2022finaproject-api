@@ -1,85 +1,78 @@
 import Models from "../database/models";
 import bcrypt from "bcrypt";
 import { decode, encode } from "../helpers/jwtTokenizer";
-
+import jwt from "jsonwebtoken";
 
 import dotenv from "dotenv";
 import sgMail from "@sendgrid/mail";
 //const mailgun = require("mailgun-js");
 
-
-
 dotenv.config();
 
 const { users } = Models;
- sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 class authController {
-  static async signup(req,res){
+  static async signup(req, res) {
     try {
-        if (req.user) {
-          return res.status(400).json({
-            status: 400,
-            message: "User with email already exist, please use onather!",
-          });
-        }
-
-        const { fullname, email, password } = req.body;
-        const salt = await bcrypt.genSaltSync(10);
-        const hashedPassword = await bcrypt.hashSync(password, salt);
-        await users.create({
-          fullname,
-          email,
-          role:"",
-          isActive:false,
-          password: hashedPassword,
+      if (req.user) {
+        return res.status(400).json({
+          status: 400,
+          message: "User with email already exist, please use onather!",
         });
-      
-       const token = await encode({ email });
-        const data = {
-          from: 'mahamealfred@gmail.com',
-          to: email,
-          subject: 'REB-QualityEducation Activation Email.',
-          text: `
+      }
+
+      const { fullname, email, password } = req.body;
+      const salt = await bcrypt.genSaltSync(10);
+      const hashedPassword = await bcrypt.hashSync(password, salt);
+      await users.create({
+        fullname,
+        email,
+        role: "",
+        isActive: false,
+        password: hashedPassword,
+      });
+
+      const token = await encode({ email });
+      const data = {
+        from: "mahamealfred@gmail.com",
+        to: email,
+        subject: "REB-QualityEducation Activation Email.",
+        text: `
           Hello, Thanks for registering on our site.
           Please copy and past the address bellow to activate your account.
           http://${process.env.CLIENT_URL}/auth/activate-email/${token}
           `,
-          html:`
+        html: `
           <h1>Hello ${fullname},</h1>
           <p>Thanks for registering on our site.</p>
           <p>Please click the link below to activate your account.</p>
           <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
-          `
-        }
-        try{
-          sgMail.send(data, function (error, body) {
-            console.log(body);
-            if (error) {
-            console.log(error)
-            }
-            else{
-              console.log("Email sent successful");
-            }
-           
-          });
-        }
-        catch(error){
-          console.log("something want wrong ");
-        }
-        
-        return res.status(200).json({
-          status: 200,
-          message: "User have been created Successfully!",
+          `,
+      };
+      try {
+        sgMail.send(data, function (error, body) {
+          console.log(body);
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent successful");
+          }
         });
-       
       } catch (error) {
-        return res.status(500).json({
-          status: 500,
-          message: error.message,
-        });
+        console.log("something want wrong ");
       }
+
+      return res.status(200).json({
+        status: 200,
+        message: "User have been created Successfully!",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
   }
 
   static async login(req, res) {
@@ -119,16 +112,15 @@ class authController {
       });
     }
   }
-  
 
   static async getAllUser(req, res) {
     try {
       const userData = await users.findAll();
-     
+
       res.status(200).json({
         status: 200,
         message: "all users ",
-        data: userData ,
+        data: userData,
       });
     } catch (error) {
       res.status(500).json({ status: 500, message: error.message });
@@ -186,24 +178,80 @@ class authController {
   static async activateAccount(req, res) {
     try {
       const { token } = req.params;
-      const { email } = await decode(token)
+      const { email } = await decode(token);
 
       // update status to active
-      let updatedEmail = await users.update({isActive:true}, { where:{email}})
+      let updatedEmail = await users.update(
+        { isActive: true },
+        { where: { email } }
+      );
 
       return res.status(200).json({
-          status: 200,
-          datta: updatedEmail,
-          message: "User activated successfully!",
-        });
-
+        status: 200,
+        datta: updatedEmail,
+        message: "User activated successfully!",
+      });
     } catch (error) {
       return res.status(500).json({
-          status: 500,
-          message:  error.message,
-        });
-      }
+        status: 500,
+        message: error.message,
+      });
     }
   }
+
+  static async forgotPassword(req, res) {
+    const { email } = req.body;
+    try {
+      await users.findOne({
+        where:{email} }, (err, user) => {
+        if (err || user) {
+          return res.status(400).json({
+            error: "User with this email does not exist!",
+          });
+        }
+        const token = jwt.sign(
+          { _id: user._id },
+          process.env.RESET_PASSWORD_KEY,
+          { expireIn: "15m" }
+        );
+        const data = {
+          from: "mahamealfred@gmail.com",
+          to: email,
+          subject: "REB-QualityEducation Activation Email.",
+          text: `
+          Hello,
+          Please copy and past the address bellow to reset your password.
+          http://${process.env.CLIENT_URL}/auth/rest-password/${token}
+          `,
+          html: `
+          <h1>Hello ${fullname},</h1>
+          <p>Reset your password.</p>
+          <p>Please click the link below to reset your password.</p>
+          <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">Activate your account.</a>
+          `,
+        };
+        return users.update({ resetlink: token }, (err, success) => {
+          if (err) {
+            return res.status(400).json({
+              error: err.message,
+            });
+          } else {
+            sgMail.send(data, function (error, body) {
+              console.log(body);
+              if (error) {
+                console.log(error);
+              } else {
+                console.log("Email sent successful");
+                return res.status(200).json({
+                  message:"Email has been sent, please check to reset your password.",
+                });
+              }
+            });
+          }
+        });
+      });
+    } catch (error) {}
+  }
+}
 
 export default authController;

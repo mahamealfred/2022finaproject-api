@@ -15,5 +15,6 @@ router.get('/',isAdmin, authController.getAllUser);
 router.get('/find/:id',isAdmin,authController.getOneUser);
 router.delete('/:id',authController.deleteUser);
 router.get('/activate-email/:token',authController.activateAccount);
+router.put('/forgot-password',authController.forgotPassword);
 
 export default router;

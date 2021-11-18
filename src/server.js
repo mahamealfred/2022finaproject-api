@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 app.use(routers);
 
-const PORT=8000
+const PORT=5000
 
 
 app.listen(PORT,()=>{

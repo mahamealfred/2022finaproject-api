@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      users.belongsTo(models.schools, {
+        foreignKey:'schoolId',
+        onDelete:'CASCADE',
+        onUpdate:'CASCADE',
+      });
     }
   };
   users.init({
@@ -19,7 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     isActive: DataTypes.BOOLEAN,
     schoolId: DataTypes.INTEGER,
-    role: DataTypes.STRING
+    role: DataTypes.STRING,
+    resetlink: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'users',

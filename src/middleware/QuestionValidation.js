@@ -3,8 +3,9 @@ import Joi from "joi";
 const QuestionValidation = (req, res, next) => {
   const Schemas = Joi.object().keys({
     question: Joi.string().min(6).required(),
-    options: Joi.array().min(6).required(),
-    startDate:Joi.date().required(),
+    options: Joi.array().min(2).required(),
+    examId:Joi.number().required(),
+    answer:Joi.number().required()
      
   });
 
