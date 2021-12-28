@@ -9,10 +9,10 @@ import resultRouters from "./result.routers";
 const router=Router();
 
 router.use('/auth',authRouters);
-router.use('/student', studentRouters);
-router.use('/school', schoolRouters);
-router.use('/exam',examRouters);
+router.use('/students', studentRouters);
+router.use('/schools', schoolRouters);
+router.use('/exams',examRouters);
 router.use('/question',questionsRouters);
-router.use('/result',resultRouters);
+router.use('/results',resultRouters);
 
 export default router

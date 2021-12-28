@@ -18,7 +18,7 @@ class authController {
       if (req.user) {
         return res.status(400).json({
           status: 400,
-          message: "User with email already exist, please use onather!",
+          message: "User with email already exist please use onather!",
         });
       }
 
@@ -116,11 +116,12 @@ class authController {
   static async getAllUser(req, res) {
     try {
       const userData = await users.findAll();
-
+     
       res.status(200).json({
         status: 200,
         message: "all users ",
         data: userData,
+   
       });
     } catch (error) {
       res.status(500).json({ status: 500, message: error.message });

@@ -20,7 +20,15 @@ module.exports = (sequelize, DataTypes) => {
   };
   questions.init({
     question: DataTypes.STRING,
-    options: DataTypes.ARRAY(DataTypes.STRING),
+    options: { 
+      type: DataTypes.STRING,
+      get() {
+          return this.getDataValue('options').split(';')
+      },
+      set(val) {
+         this.setDataValue('options',val.join(';'));
+      },
+    },
     answer: DataTypes.INTEGER,
     examId: DataTypes.INTEGER
   }, {

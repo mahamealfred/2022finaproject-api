@@ -11,8 +11,8 @@ const router=Router();
 
 router.post('/signup',Signupvalidation,CheckUser,authController.signup);
 router.post('/login',CheckUser,IsVerifiedAccount.isVerified, authController.login);
-router.get('/',isAdmin, authController.getAllUser);
-router.get('/find/:id',isAdmin,authController.getOneUser);
+router.get('/',authController.getAllUser);
+router.get('/find/:id',authController.getOneUser);
 router.delete('/:id',authController.deleteUser);
 router.get('/activate-email/:token',authController.activateAccount);
 router.put('/forgot-password',authController.forgotPassword);

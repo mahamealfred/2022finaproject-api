@@ -1,6 +1,6 @@
 import Models from "../database/models";
 
-const { exams } = Models;
+const { exams, questions } = Models;
 
 class examsController {
   static async addExam(req, res) {
@@ -104,6 +104,11 @@ class examsController {
       const modelId = req.params.id;
       const singleExam = await exams.findOne({
         where: { id: modelId },
+        include:[
+          {
+            model: questions
+          }
+        ]
       });
       if (!singleExam) {
         res.status(404).json({

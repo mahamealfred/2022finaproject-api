@@ -8,10 +8,11 @@ class studentController {
   static async addStudent(req, res) {
     try {
      
-      const { firstname,lastname, password,dob,gender,schoolId } = req.body;
+      const { firstname,lastname,email, password,dob,gender,schoolId } = req.body;
       const salt = await bcrypt.genSaltSync(10);
       const hashPassword = await bcrypt.hashSync(password, salt);
       const studentCode=await studentcoder();
+      
       const found = await schools.findOne({
         where: { id: schoolId },
       });
@@ -20,6 +21,7 @@ class studentController {
         firstname,
         lastname,
         studentcode:studentCode,
+        email,
         dob,
         gender,
         schoolId,

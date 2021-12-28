@@ -21,14 +21,13 @@ module.exports = (sequelize, DataTypes) => {
         onDelete:'CASCADE',
         onUpdate:'CASCADE',
       });
-     
-    
-  }
+    }
   };
   students.init({
     firstname: DataTypes.STRING,
     lastname: DataTypes.STRING,
     studentcode: DataTypes.STRING,
+    email: DataTypes.STRING,
     password: DataTypes.STRING,
     dob: DataTypes.DATE,
     gender: DataTypes.STRING,

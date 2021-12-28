@@ -6,11 +6,11 @@ import QuestionValidation from "../middleware/QuestionValidation";
 
 const router=Router();
 
-router.post('/',isDistrictUser, QuestionValidation, CheckQuestion,questionsController.addQuestion);
+router.post('/', QuestionValidation, CheckQuestion,questionsController.addQuestion);
 router.get('/',questionsController.getallQuestion);
-router.put('/:id',isDistrictUser, questionsController.updateQuestion);
-router.delete('/:id',isDistrictUser, questionsController.deleteQuestion);
-router.get('/find/:id',isDistrictUser,questionsController.findOneQuestion);
+router.put('/:id', questionsController.updateQuestion);
+router.delete('/:id', questionsController.deleteQuestion);
+router.get('/find/:id',questionsController.findOneQuestion);
 
 
 export default router;

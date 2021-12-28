@@ -6,10 +6,10 @@ import isDistrictUser from "../middleware/isDistrictUser";
 
 const router=Router();
 
-router.post('/',isDistrictUser, ExamValidation, CheckExam, examsController.addExam);
-router.get('/',isDistrictUser,examsController.getAllExam);
+router.post('/', ExamValidation, CheckExam, examsController.addExam);
+router.get('/',examsController.getAllExam);
 router.get('/find/:id',examsController.findOneExam);
-router.put('/:id',isDistrictUser,examsController.updateExam);
-router.delete('/:id',isDistrictUser,examsController.deleteExam);
+router.put('/:id',examsController.updateExam);
+router.delete('/:id',examsController.deleteExam);
 
 export default router;
