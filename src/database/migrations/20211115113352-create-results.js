@@ -4,18 +4,17 @@ module.exports = {
     await queryInterface.createTable('results', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
       },
       marks: {
         type: Sequelize.FLOAT
       },
       examId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       studentId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

@@ -11,16 +11,17 @@ class questionsController {
               message: "This Question is already exist!",
             });
           }
-      const { question, options, examId, answer } = req.body;
+      const { question, correct_answer, examId, incorrect_answer } = req.body;
       const foundExam=await exams.findOne({
           where:{id:examId},
       });
       if(foundExam){
        const createdQuestion= await questions.create({
             question,
-            options,
             examId,
-            answer
+            correct_answer,
+            incorrect_answer
+            
           });
           return res.status(200).json({
             status: 200,

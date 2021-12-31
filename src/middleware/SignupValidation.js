@@ -5,10 +5,11 @@ const SignupValidation = (req, res, next) => {
     fullname: Joi.string().min(6).required(),
     //role: Joi.string().required(),
     email: Joi.string().email({ minDomainSegments: 2 }).required(),
-    password: Joi.string()
-      .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
-      .required(),
-  });
+    role:Joi.string().min(3).required(),
+  //   password: Joi.string()
+  //     .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
+  //     .required(),
+   });
 
   const { error } = Schemas.validate(req.body);
 

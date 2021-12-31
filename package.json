@@ -20,10 +20,13 @@
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
     "multer": "^1.4.3",
+    "nodemailer": "^6.7.2",
+    "nodemailer-sendgrid": "^1.0.3",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
     "sendgrid": "^5.2.3",
-    "sequelizer": "^1.1.4"
+    "sequelizer": "^1.1.4",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.16.0",

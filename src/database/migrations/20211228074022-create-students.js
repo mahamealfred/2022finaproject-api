@@ -4,9 +4,8 @@ module.exports = {
     await queryInterface.createTable('students', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       firstname: {
         type: Sequelize.STRING
@@ -30,7 +29,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       schoolId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

@@ -5,6 +5,9 @@ const ExamValidation = (req, res, next) => {
     name: Joi.string().min(6).required(),
     subject: Joi.string().min(6).required(),
     startDate:Joi.date().required(),
+    question: Joi.string().min(6).required(),
+    correct_answer: Joi.string().required(),
+    incorrect_answer: Joi.array().min(2).required(),
      
   });
 

@@ -1,42 +1,50 @@
 import Models from "../database/models";
 import bcrypt from "bcrypt";
 import { encode } from "../helpers/jwtTokenizer";
-import studentcoder from '../helpers/studentcoder'
+import studentcoder from "../helpers/studentcoder";
+import generateRandomPassword from "../helpers/passwordGenerator";
+import { v4 as uuidv4 } from "uuid";
+import CheckStudent from "../middleware/CheckStudent";
 const { students, schools } = Models;
 
 class studentController {
   static async addStudent(req, res) {
     try {
-     
-      const { firstname,lastname,email, password,dob,gender,schoolId } = req.body;
-      const salt = await bcrypt.genSaltSync(10);
-      const hashPassword = await bcrypt.hashSync(password, salt);
-      const studentCode=await studentcoder();
-      
+      const { firstname, lastname, email,dob, gender, schoolId} = req.body;
+     // const salt = await bcrypt.genSaltSync(10);
+     // const hashPassword = await bcrypt.hashSync(password, salt);
+      const studentCode = await studentcoder();
+      const password = generateRandomPassword();
       const found = await schools.findOne({
         where: { id: schoolId },
       });
-   if(found){
-    await students.create({
-        firstname,
-        lastname,
-        studentcode:studentCode,
-        email,
-        dob,
-        gender,
-        schoolId,
-        password: hashPassword,
+      if (req.student) {
+        return res.status(400).json({
+          status: 400,
+          message: "Student with email already exist please use onather!",
+        });
+      }
+      if (found) {
+        await students.create({
+          id: uuidv4(),
+          firstname,
+          lastname,
+          studentcode: studentCode,
+          email,
+          dob,
+          gender,
+          schoolId,
+          password,
+        });
+        return res.status(201).json({
+          status: 201,
+          message: "Student have been added successfull!",
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: " School not found",
       });
-      return res.status(201).json({
-        status: 201,
-        message: "Student have been added successfull!",
-      });
-   }
-   return res.status(404).json({
-    status: 404,
-    message: " School not found",
-  });
-     
     } catch (error) {
       return res.status(500).json({
         status: 500,
@@ -46,46 +54,47 @@ class studentController {
   }
 
   static async updateStudent(req, res) {
-   try {
-    const { firstname,lastname,dob,gender,schoolId } = req.body;
-    const {id}=req.params;
-    const found=await students.findOne({
-      where: {id},
-     });
-     if(found){
-         const foundSchool=await schools.findOne({
-             where:{id:schoolId},
-         });
-         if(foundSchool){
-          const updatedStudent = await students.update({ 
+    try {
+      const { firstname, lastname, dob, gender, schoolId } = req.body;
+      const { id } = req.params;
+      const found = await students.findOne({
+        where: { id },
+      });
+      if (found) {
+        const foundSchool = await schools.findOne({
+          where: { id: schoolId },
+        });
+        if (foundSchool) {
+          const updatedStudent = await students.update(
+            {
               firstname,
               lastname,
               dob,
               gender,
-              schoolId 
-             } , {
-              where: {id},
+              schoolId,
+            },
+            {
+              where: { id },
               returning: true,
-            });
-           return res.status(200).json({
-              status: 200,
-              message: "Student updated successfull!",
-              data: updatedStudent,
-            });
-         }
-         return res.status(404).json({
+            }
+          );
+          return res.status(200).json({
+            status: 200,
+            message: "Student updated successfull!",
+            data: updatedStudent,
+          });
+        }
+        return res.status(404).json({
           status: 404,
-          message: "School not found"
+          message: "School not found",
         });
-          
-     }
-    return res.status(404).json({
-      status: 404,
-      message: "Student not found"
-    });
-      
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "Student not found",
+      });
     } catch (error) {
-     return res.status(500).json({ status: 500, message:error.message });
+      return res.status(500).json({ status: 500, message: error.message });
     }
   }
 
@@ -101,7 +110,7 @@ class studentController {
         });
         return res.status(200).json({
           status: 200,
-          message: "Student deleted"
+          message: "Student deleted",
         });
       }
       res.status(404).json({
@@ -118,8 +127,7 @@ class studentController {
       const singleStudent = await students.findOne({
         where: { id: modelId },
       });
-      if(singleStudent )
-      {
+      if (singleStudent) {
         res.status(200).json({
           status: 200,
           message: "retrieved one Student",
@@ -130,7 +138,6 @@ class studentController {
         status: 404,
         message: "Student not  found",
       });
-     
     } catch (error) {
       console.log(error);
       res.status(500).json({ status: 500, message: "server error" });
@@ -158,8 +165,7 @@ class studentController {
         message: error.message,
       });
     }
-}
-
+  }
 }
 
 export default studentController;

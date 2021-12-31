@@ -4,21 +4,20 @@ module.exports = {
     await queryInterface.createTable('questions', {
       id: {
         allowNull: false,
-        autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING,
       },
       question: {
         type: Sequelize.STRING
       },
-      options: {
+      incorrect_answer: {
         type: Sequelize.STRING,
       },
-      answer: {
-        type: Sequelize.INTEGER
+      correct_answer: {
+        type: Sequelize.STRING
       },
       examId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

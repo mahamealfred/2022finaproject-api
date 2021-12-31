@@ -7,6 +7,8 @@ const SchoolValidation = (req, res, next) => {
     district: Joi.string().min(3).required(),
     sector: Joi.string().min(3).required(),
     cell: Joi.string().min(3).required(),
+    email: Joi.string().min(3).required(),
+    fullname: Joi.string().min(3).required(),
     level: Joi.array().min(1).required()
    
   });
