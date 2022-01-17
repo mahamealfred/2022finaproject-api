@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       district: DataTypes.STRING,
       sector: DataTypes.STRING,
       cell: DataTypes.STRING,
-      level: DataTypes.ARRAY(DataTypes.STRING),
+      // level: DataTypes.ARRAY(DataTypes.STRING),
     },
     {
       sequelize,

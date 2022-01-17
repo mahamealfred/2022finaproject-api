@@ -28,7 +28,7 @@ class schoolController {
         });
       }
 
-      const { name, province, district, sector, cell, level, email, fullname } =
+      const { name, province, district, sector, cell, email, fullname } =
         req.body;
       const password = generateRandomPassword();
       const schoolId = uuidv4();
@@ -38,7 +38,7 @@ class schoolController {
         fullname,
         email,
         password,
-        isActive: false,
+        isActive: "INACTIVE",
         role: "SchoolAdmin",
         schoolId,
       });
@@ -50,7 +50,7 @@ class schoolController {
         district,
         sector,
         cell,
-        level,
+      
       });
       const token = await encode({ email });
       const data = {
@@ -113,7 +113,7 @@ class schoolController {
         district: req.body.district,
         sector: req.body.sector,
         cell: req.body.cell,
-        level: req.body.level,
+        
       };
       const modelId = req.params.id;
       const found = await schools.findOne({
@@ -135,7 +135,7 @@ class schoolController {
         message: "School not found",
       });
     } catch (error) {
-      return res.status(500).json({ status: 500, message: "server error" });
+      return res.status(500).json({ status: 500, message: "server  error" });
     }
   }
 

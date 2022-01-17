@@ -9,6 +9,6 @@ router.post('/newSchool',CheckUser, SchoolValidation, CheckSchool, schoolControl
 router.get('/',schoolController.getAllSchool);
 router.get('/find/:id',schoolController.findOneSchool);
 router.delete('/:id',schoolController.deleteSchool);
-router.put('/:id',schoolController.updateSchool);
+router.patch('/:id',schoolController.updateSchool);
 
 export default router;

@@ -9,6 +9,13 @@ router.post('/newStudent',CheckStudent, StudentValidation, studentController.add
 router.get('/',studentController.getallStudent);
 router.get('/find/:id',studentController.findOneStudent);
 router.delete('/:id',studentController.deleteStudent);
-router.put('/:id',studentController.updateStudent);
+router.patch('/:id',studentController.updateStudent);
+router.get('/primary',studentController.getAllprimaryStudent);
+router.get('/ordinarylevel',studentController.getAllOrdinaryLevelStudent);
+router.get('/ordinarylevelMaleStudent',studentController.getAllOrdinaryLevelMaleStudent);
+router.get('/ordinarylevelFemaleStudent',studentController.getAllOrdinaryLevelFemaleStudent);
+router.get('/primarylevelFemaleStudent',studentController.getAllPrimaryLevelFemaleStudent);
+router.get('/primarylevelMaleStudent',studentController.getAllPrimaryLevelMaleStudent);
+
 
 export default router;

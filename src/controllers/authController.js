@@ -32,7 +32,7 @@ class authController {
         fullname,
         email,
         role,
-        isActive: false,
+        isActive: "INACTIVE",
         password
       });
 
@@ -92,7 +92,7 @@ class authController {
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
       if (dbEmail == email) {
-        if (password) {
+        if (dbPasword==password) {
           const token = await encode({ email });
           return res.status(200).json({
             status: 200,
@@ -185,7 +185,7 @@ class authController {
 
       // update status to active
       let updatedEmail = await users.update(
-        { isActive: true },
+        { isActive: "ACTIVE" },
         { where: { email } }
       );
 
