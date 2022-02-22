@@ -1,11 +1,14 @@
 import { Router } from "express";
 import studentController from "../controllers/studentController";
 import CheckStudent from "../middleware/CheckStudent";
+import isSchoolUser from "../middleware/isSchoolUser";
 import StudentValidation from "../middleware/StudentValidation";
+import verifyToken from "../middleware/verifyToken";
 
 const router=Router();
 
 router.post('/newStudent',CheckStudent, StudentValidation, studentController.addStudent);
+router.post('/login',CheckStudent,studentController.login);
 router.get('/',studentController.getallStudent);
 router.get('/find/:id',studentController.findOneStudent);
 router.delete('/:id',studentController.deleteStudent);
@@ -16,6 +19,7 @@ router.get('/ordinarylevelMaleStudent',studentController.getAllOrdinaryLevelMale
 router.get('/ordinarylevelFemaleStudent',studentController.getAllOrdinaryLevelFemaleStudent);
 router.get('/primarylevelFemaleStudent',studentController.getAllPrimaryLevelFemaleStudent);
 router.get('/primarylevelMaleStudent',studentController.getAllPrimaryLevelMaleStudent);
+router.get('/primaryStudent/:id', isSchoolUser,studentController.getAllStudentToSpecificSchool)
 
 
 export default router;

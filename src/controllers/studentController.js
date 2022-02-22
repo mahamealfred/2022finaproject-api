@@ -5,14 +5,15 @@ import studentcoder from "../helpers/studentcoder";
 import generateRandomPassword from "../helpers/passwordGenerator";
 import { v4 as uuidv4 } from "uuid";
 import CheckStudent from "../middleware/CheckStudent";
-const { students, schools } = Models;
+const { students, schools, users, results } = Models;
 
 class studentController {
   static async addStudent(req, res) {
     try {
-      const { firstname, lastname, email,dob, gender, level,schoolId} = req.body;
-     // const salt = await bcrypt.genSaltSync(10);
-     // const hashPassword = await bcrypt.hashSync(password, salt);
+      const { firstname, lastname, email, dob, gender, level, schoolId } =
+        req.body;
+      // const salt = await bcrypt.genSaltSync(10);
+      // const hashPassword = await bcrypt.hashSync(password, salt);
       const studentCode = await studentcoder();
       const password = generateRandomPassword();
       const found = await schools.findOne({
@@ -53,42 +54,92 @@ class studentController {
       });
     }
   }
+  static async login(req, res) {
+    try {
+      const { email, studentCode, password } = req.body;
+      if (!req.student) {
+        return res.status(404).json({
+          status: 404,
+          message: "User not found",
+        });
+      }
+      const dbEmail = req.student.email;
+      const dbPasword = req.student.password;
+      const dbStudentCode = req.student.studentcode;
+
+      const decreptedPassword = await bcrypt.compare(password, dbPasword);
+      if (dbEmail == email) {
+        if (dbStudentCode == studentCode) {
+          if (dbPasword == password) {
+            const token = await encode({ email });
+            return res.status(200).json({
+              status: 200,
+              message: "Student logged with Token",
+              data: {
+                Student: req.student,
+                token,
+              },
+            });
+          }
+          return res.status(401).json({
+            status: 401,
+            message: "Password is not correct",
+          });
+        }
+        return res.status(401).json({
+          status: 401,
+          message: "Incorrect Student Code",
+        });
+      }
+      return res.status(401).json({
+        status: 401,
+        message: "Invalid Email",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: "Server error" + error.message,
+      });
+    }
+  }
 
   static async updateStudent(req, res) {
     try {
-      const { firstname,lastname,email,dob,level}=req.body;
-      const modelId= req.params.id;
-     
+      const { firstname, lastname, email, dob, level } = req.body;
+      const modelId = req.params.id;
+
       const found = await students.findOne({
-        where: { id: modelId},
+        where: { id: modelId },
       });
-     
+
       if (found) {
-        
-          const updatedStudent = await students.update({
+        const updatedStudent = await students.update(
+          {
             firstname,
             lastname,
             email,
             dob,
             level,
-           
-          }, {
+          },
+          {
             where: { id: modelId },
             returning: true,
-          });
-          return res.status(200).json({
-            status: 200,
-            message: "Student updated successfull!",
-            data: updatedStudent,
-          });
-       
+          }
+        );
+        return res.status(200).json({
+          status: 200,
+          message: "Student updated successfull!",
+          data: updatedStudent,
+        });
       }
       return res.status(404).json({
         status: 404,
         message: "Student not found",
       });
     } catch (error) {
-      return res.status(500).json({ status: 500, message: "server  error"+error.message });
+      return res
+        .status(500)
+        .json({ status: 500, message: "server  error" + error.message });
     }
   }
 
@@ -122,19 +173,19 @@ class studentController {
         where: { id: modelId },
       });
       if (singleStudent) {
-       return res.status(200).json({
+        return res.status(200).json({
           status: 200,
           message: "retrieved one Student",
           data: singleStudent,
         });
       }
-     return res.status(404).json({
+      return res.status(404).json({
         status: 404,
         message: "Student not  found",
       });
     } catch (error) {
       console.log(error);
-    return  res.status(500).json({ status: 500, message: "server error" });
+      return res.status(500).json({ status: 500, message: "server error" });
     }
   }
 
@@ -163,7 +214,6 @@ class studentController {
 
   static async getAllprimaryStudent(req, res) {
     try {
-    
       const TotalStudent = await students.findAll({
         where: { level: "P6" },
       });
@@ -171,174 +221,214 @@ class studentController {
         where: { level: "P6" },
       });
       if (TotalStudent) {
-       return res.status(200).json({
+        return res.status(200).json({
           status: 200,
           message: "retrieved All Primary Students",
-          count:TotalCount,
+          count: TotalCount,
           data: TotalStudent,
-          
         });
       }
-     return res.status(404).json({
+      return res.status(404).json({
         status: 404,
         message: "Student not  found",
       });
     } catch (error) {
       console.log(error);
-     return res.status(500).json({ status: 500, message: "server error" });
+      return res.status(500).json({ status: 500, message: "server error" });
     }
-}
-static async getAllOrdinaryLevelStudent(req, res) {
-  try {
-  
-    const TotalStudent = await students.findAll({
-      where: { level: "S3" },
-    });
-    const TotalCount = await students.count({
-      where: { level: "S3" },
-    });
-    if (TotalStudent) {
-    return  res.status(200).json({
-        status: 200,
-        message: "retrieved All Ordinary Level Students",
-        count:TotalCount,
-        data: TotalStudent,
-        
-      });
-    }
-   return  res.status(404).json({
-      status: 404,
-      message: "Student not  found",
-    });
-  } catch (error) {
-    console.log(error);
-   return res.status(500).json({ status: 500, message: "server error" });
   }
-}
-static async getAllOrdinaryLevelMaleStudent(req, res) {
-  try {
-  
-    const { count, rows: Students } = await students.findAndCountAll({
-      where: {
-        gender: 'male',
-        level:'S3',
-      },
-      order: [['id', 'ASC']],
-      
-    });
-  
-    if (Students) {
-    return  res.status(200).json({
-        status: 200,
-        message: "retrieved All Male Ordinary Level Students",
-        count:count,
-        data: Students,
-        
+  static async getAllOrdinaryLevelStudent(req, res) {
+    try {
+      const TotalStudent = await students.findAll({
+        where: { level: "S3" },
       });
+      const TotalCount = await students.count({
+        where: { level: "S3" },
+      });
+      if (TotalStudent) {
+        return res.status(200).json({
+          status: 200,
+          message: "retrieved All Ordinary Level Students",
+          count: TotalCount,
+          data: TotalStudent,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "Student not  found",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ status: 500, message: "server error" });
     }
-   return  res.status(404).json({
-      status: 404,
-      message: "Student not  found",
-    });
-  } catch (error) {
-    console.log(error);
-   return res.status(500).json({ status: 500, message: "server error" });
   }
-}
+  static async getAllOrdinaryLevelMaleStudent(req, res) {
+    try {
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          gender: "male",
+          level: "S3",
+        },
+        order: [["id", "ASC"]],
+      });
 
-static async getAllOrdinaryLevelFemaleStudent(req, res) {
-  try {
-  
-    const { count, rows: Students } = await students.findAndCountAll({
-      where: {
-        gender: 'female',
-        level:'S3',
-      },
-      order: [['id', 'ASC']],
-      
-    });
-  
-    if (Students) {
-    return  res.status(200).json({
-        status: 200,
-        message: "retrieved All Female Ordinary Level Students",
-        count:count,
-        data: Students,
-        
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "retrieved All Male Ordinary Level Students",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "Student not  found",
       });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ status: 500, message: "server error" });
     }
-   return  res.status(404).json({
-      status: 404,
-      message: "Student not  found",
-    });
-  } catch (error) {
-    console.log(error);
-   return res.status(500).json({ status: 500, message: "server error" });
   }
-}
 
-static async getAllPrimaryLevelFemaleStudent(req, res) {
-  try {
-  
-    const { count, rows: Students } = await students.findAndCountAll({
-      where: {
-        gender: 'female',
-        level:'P6',
-      },
-      order: [['id', 'ASC']],
-      
-    });
-  
-    if (Students) {
-    return  res.status(200).json({
-        status: 200,
-        message: "retrieved All Female Primary Level Students",
-        count:count,
-        data: Students,
-        
+  static async getAllOrdinaryLevelFemaleStudent(req, res) {
+    try {
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          gender: "female",
+          level: "S3",
+        },
+        order: [["id", "ASC"]],
       });
-    }
-   return  res.status(404).json({
-      status: 404,
-      message: "Student not  found",
-    });
-  } catch (error) {
-    console.log(error);
-   return res.status(500).json({ status: 500, message: "server error" });
-  }
-}
 
-static async getAllPrimaryLevelMaleStudent(req, res) {
-  try {
-  
-    const { count, rows: Students } = await students.findAndCountAll({
-      where: {
-        gender: 'male',
-        level:'P6',
-      },
-      order: [['id', 'ASC']],
-      
-    });
-  
-    if (Students) {
-    return  res.status(200).json({
-        status: 200,
-        message: "retrieved All Male Primary Level Students",
-        count:count,
-        data: Students,
-        
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "retrieved All Female Ordinary Level Students",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "Student not  found",
       });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ status: 500, message: "server error" });
     }
-   return  res.status(404).json({
-      status: 404,
-      message: "Student not  found",
-    });
-  } catch (error) {
-    console.log(error);
-   return res.status(500).json({ status: 500, message: "server error" });
   }
-}
 
+  static async getAllPrimaryLevelFemaleStudent(req, res) {
+    try {
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          gender: "female",
+          level: "P6",
+        },
+        order: [["id", "ASC"]],
+      });
+
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "retrieved All Female Primary Level Students",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "Student not  found",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ status: 500, message: "server error" });
+    }
+  }
+
+  static async getAllPrimaryLevelMaleStudent(req, res) {
+    try {
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          gender: "male",
+          level: "P6",
+        },
+        order: [["id", "ASC"]],
+      });
+
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "retrieved All Male Primary Level Students",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "Student not  found",
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ status: 500, message: "server error" });
+    }
+  }
+  static async getAllStudentToSpecificSchool(req, res) {
+    try {
+      const schoolId = req.params.id;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolId,
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All student",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getAllStudentToSpecificDistrict(req, res) {
+    try {
+      const schoolId = req.params.id;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolId,
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All student",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
 }
 
 export default studentController;

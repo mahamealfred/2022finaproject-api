@@ -41,14 +41,25 @@ class examsController {
   }
   static async getAllExam(req, res) {
     try {
-      const examsData = await exams.findAll();
-      res.status(200).json({
+      
+
+      const { count, rows: examsData } = await exams.findAndCountAll({
+        
+        include: [
+          {
+            model: questions,
+          },
+        ],
+        order: [['id', 'ASC']],
+      });
+     return res.status(200).json({
         status: 200,
         message: "All Exam",
+        count:count,
         data: examsData,
       });
     } catch (error) {
-      res.status(500).json({ status: 500, message: error.message });
+      return res.status(500).json({ status: 500, message: error.message });
     }
   }
 
@@ -60,30 +71,28 @@ class examsController {
         where: { id },
       });
       if (found) {
-        const updatedExam =await exams.update(
-          {
-            name,
-            subject,
-            startDate,
-          },
-          { where: { id }, 
-          returning: true }
-        );
-
-        return res.status(200).json({
+        const updatedExam = await exams.update({ 
+          name,
+          subject,
+          startDate
+         } , {
+          where: {id},
+          returning: true,
+        });
+       return res.status(200).json({
           status: 200,
-          message: "Exam updated",
-
+          message: "Exam updated successfull!",
           data: updatedExam,
         });
-      }
-      res.status(404).json({
-        status: 404,
-        message: "Exam not found",
-      });
+     }
+return res.status(404).json({
+  status: 404,
+  message: "Exam not found"
+});
+  
     } catch (error) {
       console.log(error);
-      res.status(500).json({ status: 500, message: error.message });
+      return res.status(500).json({ status: 500, message: error.message });
     }
   }
 

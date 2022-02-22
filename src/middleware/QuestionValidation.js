@@ -4,7 +4,8 @@ const QuestionValidation = (req, res, next) => {
   const Schemas = Joi.object().keys({
     question: Joi.string().min(6).required(),
     correct_answer: Joi.string().required(),
-    incorrect_answer: Joi.array().min(1).required()
+    incorrect_answer: Joi.array().min(1).required(),
+    examId: Joi.string().required(),
     
    
      

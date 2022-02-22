@@ -16,6 +16,6 @@ router.get('/find/:id',authController.getOneUser);
 router.delete('/:id',authController.deleteUser);
 router.get('/activate-email/:token',authController.activateAccount);
 router.put('/forgot-password',CheckUser, authController.forgotPassword);
-router.post('reset-password/:token',authController.resetPassword);
+router.put('/reset-password/:token',authController.resetPassword);
 
 export default router;

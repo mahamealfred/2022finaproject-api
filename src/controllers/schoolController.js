@@ -39,7 +39,7 @@ class schoolController {
         email,
         password,
         isActive: "INACTIVE",
-        role: "SchoolAdmin",
+        role: "SchoolUser",
         schoolId,
       });
 
@@ -94,10 +94,24 @@ class schoolController {
   }
   static async getAllSchool(req, res) {
     try {
-      const schoolsData = await schools.findAll();
+      const {count, rows:schoolsData} = await schools.findAll();
       res.status(200).json({
         status: 200,
         message: "All School",
+        count:count,
+        data: schoolsData,
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: "server error" });
+    }
+  }
+  static async getAllSchoolToSpecificDistrict(req, res) {
+    try {
+      const {count, rows:schoolsData} = await schools.findAndCountAll();
+      res.status(200).json({
+        status: 200,
+        message: "All School",
+        count:count,
         data: schoolsData,
       });
     } catch (error) {

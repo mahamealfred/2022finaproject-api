@@ -6,7 +6,7 @@ import QuestionValidation from "../middleware/QuestionValidation";
 
 const router=Router();
 
-router.post('/', QuestionValidation, CheckQuestion,questionsController.addQuestion);
+router.post('/',QuestionValidation, CheckQuestion,questionsController.addQuestion);
 router.get('/',questionsController.getallQuestion);
 router.put('/:id', questionsController.updateQuestion);
 router.delete('/:id', questionsController.deleteQuestion);

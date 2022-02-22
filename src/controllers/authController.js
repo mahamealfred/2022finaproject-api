@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import sgMail from "@sendgrid/mail";
 import generateRandomPassword from "../helpers/passwordGenerator";
+import nodemailer from "nodemailer";
 //const mailgun = require("mailgun-js");
-
 dotenv.config();
 
 const { users } = Models;
@@ -23,7 +23,7 @@ class authController {
         });
       }
 
-      const { fullname, email,role } = req.body;
+      const { fullname, email, role } = req.body;
       // const salt = await bcrypt.genSaltSync(10);
       // const hashedPassword = await bcrypt.hashSync(password, salt);
       const password = generateRandomPassword();
@@ -33,12 +33,22 @@ class authController {
         email,
         role,
         isActive: "INACTIVE",
-        password
+        password,
       });
 
       const token = await encode({ email });
-      const data = {
-        from: "qualityeducationbooster@gmail.com",
+
+      const mail = nodemailer.createTransport({
+        host: "smtp.outlook.com",
+       port: 587,
+       secure: false,
+       auth: {
+         user: "mahamealfred@outlook.com", // Your email id
+         pass: "Mahame2022", // Your password
+       },
+     });
+      const data = await mail.sendMail({
+        from: "mahamealfred@outlook.com",
         to: email,
         subject: "REB-QualityEducation Activation Email.",
         text: `
@@ -52,9 +62,9 @@ class authController {
           <p>Please click the link below to activate your account.</p>
           <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
           `,
-      };
+      });
       try {
-        sgMail.send(data, function (error, body) {
+        data.sendMail(data, function (error, body) {
           console.log(body);
           if (error) {
             console.log(error);
@@ -92,7 +102,7 @@ class authController {
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
       if (dbEmail == email) {
-        if (dbPasword==password) {
+        if (dbPasword == password) {
           const token = await encode({ email });
           return res.status(200).json({
             status: 200,
@@ -213,32 +223,42 @@ class authController {
       }
       const user = await users.findOne({ email: email });
       const token = jwt.sign(
-        { _id: user._id },
+        { _id: user._id ,email},
         process.env.RESET_PASSWORD_KEY,
         { expiresIn: "15m" }
       );
 
       await users.update({ resetlink: token }, { where: { email: email } });
-    
-      const data = {
-        from: "qualityeducationbooster@gmail.com",
+
+      const mail = nodemailer.createTransport({
+         host: "smtp.outlook.com",
+        port: 587,
+        secure: false,
+        auth: {
+          user: "mahamealfred@outlook.com", // Your email id
+          pass: "Mahame2022", // Your password
+        },
+      });
+
+      const data = await mail.sendMail({
+        from: "mahamealfred@outlook.com",
         to: email,
         subject: "REB-QualityEducation Activation Email.",
         text: `
           Hello,
-          Please copy and past the address bellow to reset your password.
+          Please copy and past the address bellow too reset your password.
           http://${process.env.CLIENT_URL}/auth/rest-password/${token}
           `,
         html: `
           <h1>Hello ${req.user.fullname},</h1>
           <p>Reset your password.</p>
           <p>Please click the link below to reset your password.</p>
-          <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">Reset  your password.</a>
+          <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">To reset  your password.</a>
           `,
-      };
+      });
       try {
-        sgMail.send(data, function (error, body) {
-          console.log(body);
+        data.sendMail(data, function (error, body) {
+
           if (error) {
             console.log(error);
           } else {
@@ -246,7 +266,7 @@ class authController {
           }
         });
       } catch (error) {
-        console.log("something want wrong ");
+        console.log("something went wrong ");
       }
       return res.status(200).json({
         status: 200,
@@ -260,27 +280,51 @@ class authController {
     }
   }
   static async resetPassword(req, res) {
+     
+    const token = req.params.token;
+    const password = req.body.password;
+    //const email=to
+    const payload = jwt.verify(token, process.env.RESET_PASSWORD_KEY);
+    req.user = payload; 
+    const email=req.user.email
+ try {
+   const findUser=await users.findOne({
+     where:{resetlink:token}
+   })
+   if(!findUser){
+     res.status(403).json({
+       status: 403,
+       message:'Invalid Link'
+     })
+   }
+   const saltRounds=10;
+   const salt =await bcrypt.genSaltSync(saltRounds)
+   const hashedPassword=await bcrypt.hashSync(password, salt)
+    const updatedPassword=await users.update({password:hashedPassword},{
+      where:{email:{email}},
+      returning: true
+    })
+    res.status(200).json({
+      status:200,
+      message:"You have reset successful your password",
+      data:updatedPassword
+
+    });
+    return res.status(401).json({
+      status:401,
+      message:"Invalid Link, please try again"
+    })
    
-    try {
-      const user = await users.findById(req.params.modelId);
-        if (!user) return res.status(400).send("invalid link or expired");
+ } catch (error) {
+   return res.status(500).json({
+     status:500,
+     message:"Server error:" +error.message
+   })
+ }
+  
+}
 
-        const token = await users.findOne({
-            id: user._id,
-            resetlink: req.params.token,
-        });
-        if (!token) return res.status(400).send("Invalid link or expired");
-
-        user.password = req.body.password;
-        await user.save();
-        await token.delete();
-      } catch (error) {
-      return res.status(500).json({
-        status: 500,
-        message: error.message,
-      });
-    }
-  }
+ 
 }
 
 export default authController;

@@ -1,4 +1,5 @@
 import Models from "../database/models";
+import { v4 as uuidv4 } from "uuid";
 
 const { questions,exams} = Models;
 
@@ -13,14 +14,15 @@ class questionsController {
           }
       const { question, correct_answer, examId, incorrect_answer } = req.body;
       const foundExam=await exams.findOne({
-          where:{id:examId},
+          where:{id: examId},
       });
       if(foundExam){
        const createdQuestion= await questions.create({
+            id:uuidv4(),
             question,
-            examId,
             correct_answer,
-            incorrect_answer
+            incorrect_answer,
+            examId
             
           });
           return res.status(200).json({
@@ -57,21 +59,17 @@ class questionsController {
 
   static async updateQuestion(req, res) {
     try {
-        const { question, options, examId, answer } = req.body;
+        const { question, correct_answer,incorrect_answer } = req.body;
      const {id}=req.params;
       const found=await questions.findOne({
         where: {id},
        });
        if(found){
-           const exam=await exams.findOne({
-               where:{id:examId},
-           });
-           if(exam){
+         
             const updatedQuestion = await questions.update({ 
                 question,
-                options,
-                examId,
-                answer 
+                correct_answer,
+                incorrect_answer
                } , {
                 where: {id},
                 returning: true,
@@ -82,12 +80,6 @@ class questionsController {
                 data: updatedQuestion,
               });
            }
-           return res.status(404).json({
-            status: 404,
-            message: "Exam not found"
-          });
-            
-       }
       return res.status(404).json({
         status: 404,
         message: "Question not found"

@@ -12,7 +12,7 @@ router.use('/auth',authRouters);
 router.use('/students', studentRouters);
 router.use('/schools', schoolRouters);
 router.use('/exams',examRouters);
-router.use('/question',questionsRouters);
+router.use('/questions',questionsRouters);
 router.use('/results',resultRouters);
 
 export default router
