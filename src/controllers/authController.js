@@ -61,10 +61,12 @@ class authController {
           <p>Thanks for registering on our site.</p>
           <p>Please click the link below to activate your account.</p>
           <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
+          <p>Please click the link below to reset your password. Your current password is :</p><h2>${password}</h2>
+          <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">Reset your password.</a>
           `,
       });
       try {
-        data.sendMail(data, function (error, body) {
+        data.sendMail(data, function (error, body){
           console.log(body);
           if (error) {
             console.log(error);
@@ -103,15 +105,25 @@ class authController {
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
       if (dbEmail == email) {
         if (dbPasword == password) {
-          const token = await encode({ email });
+          const userSchooldbId=req.user.schoolId;
+          const userDistrictdbId=req.user.districtId
+          const token = await encode({ email,userSchooldbId,userDistrictdbId});
+          const decodedToken=await decode(token)
+          const userSchoolId=decodedToken.userSchooldbId
+          const userDistrictId=decodedToken.userDistrictdbId
+          const Email=decodedToken.email
           return res.status(200).json({
             status: 200,
             message: "User logged with Token",
             data: {
-              user: req.user,
+              user: Email,
+              schoolId:userSchoolId,
+              districtId:userDistrictId,
               token,
+             
             },
           });
+        
         }
       }
       return res.status(401).json({

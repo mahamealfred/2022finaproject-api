@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       });
+      users.belongsTo(models.districts, {
+        foreignKey: "districtId",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
     }
   }
   users.init(
@@ -22,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
       email: DataTypes.STRING,
       password: DataTypes.STRING,
       isActive: DataTypes.STRING,
-      schoolId: DataTypes.INTEGER,
+      schoolId: DataTypes.STRING,
+      districtId:DataTypes.STRING,
       role: DataTypes.STRING,
       resetlink: DataTypes.STRING,
     },

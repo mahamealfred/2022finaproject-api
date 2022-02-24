@@ -18,13 +18,17 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       });
+      schools.belongsTo(models.districts, {
+        foreignKey: "districtId",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
+      });
     }
   }
   schools.init(
     {
       name: DataTypes.STRING,
-      province: DataTypes.STRING,
-      district: DataTypes.STRING,
+      districtId:DataTypes.STRING,
       sector: DataTypes.STRING,
       cell: DataTypes.STRING,
       // level: DataTypes.ARRAY(DataTypes.STRING),

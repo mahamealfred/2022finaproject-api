@@ -1,4 +1,5 @@
 import Models from "../database/models";
+import { v4 as uuidv4 } from "uuid";
 
 const { results,exams,students} = Models;
 
@@ -15,6 +16,7 @@ class resultController {
           });
           if(findExam){
             const createdResult= await results.create({
+                id:uuidv4(),
                 marks,
                 examId,
                 studentId
@@ -64,6 +66,35 @@ class resultController {
       });
     } catch (error) {
       res.status(500).json({ status: 500, message: "server error" });
+    }
+  }
+  static async getAllPrimaryResultToSpecificSchool(req,res){
+    try {
+      const schoolId = req.params.id;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolId,
+          level:'S3'
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All result for student",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
     }
   }
 

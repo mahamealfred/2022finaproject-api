@@ -19,7 +19,13 @@ router.get('/ordinarylevelMaleStudent',studentController.getAllOrdinaryLevelMale
 router.get('/ordinarylevelFemaleStudent',studentController.getAllOrdinaryLevelFemaleStudent);
 router.get('/primarylevelFemaleStudent',studentController.getAllPrimaryLevelFemaleStudent);
 router.get('/primarylevelMaleStudent',studentController.getAllPrimaryLevelMaleStudent);
-router.get('/primaryStudent/:id', isSchoolUser,studentController.getAllStudentToSpecificSchool)
-
+//to specific school user
+router.get('/primaryStudents', isSchoolUser,studentController.getAllPrimaryStudentToSpecificSchool);
+router.get('/ordinarylevelstudents',isSchoolUser,studentController.getAllOrdinaryLevelStudentToSpecificSchool);
+router.get('/primaryfemaleStudents',isSchoolUser,studentController.getAllFemalePrimaryStudentToSpecificSchool);
+router.get('/primaryMaleStudents',isSchoolUser,studentController.getAllMalePrimaryStudentToSpecificSchool);
+router.get('/ordinaryLevelMaleStudents',isSchoolUser,studentController.getAllMaleOrdinaryLevelStudentToSpecificSchool);
+router.get('/ordinaryLevelFemaleStudents',isSchoolUser,studentController.getAllFemaleOrdinaryLevelStudentToSpecificSchool);
+//to a specific distric user
 
 export default router;

@@ -5,6 +5,7 @@ import studentcoder from "../helpers/studentcoder";
 import generateRandomPassword from "../helpers/passwordGenerator";
 import { v4 as uuidv4 } from "uuid";
 import CheckStudent from "../middleware/CheckStudent";
+import { decode } from "jsonwebtoken";
 const { students, schools, users, results } = Models;
 
 class studentController {
@@ -373,12 +374,16 @@ class studentController {
       return res.status(500).json({ status: 500, message: "server error" });
     }
   }
-  static async getAllStudentToSpecificSchool(req, res) {
+  static async getAllPrimaryStudentToSpecificSchool(req, res) {
     try {
-      const schoolId = req.params.id;
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolUserId = Token.dbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolId,
+          schoolId: schoolUserId,
+          level: "P6",
         },
         order: [["id", "ASC"]],
         include: [{ model: results }],
@@ -386,7 +391,7 @@ class studentController {
       if (Students) {
         return res.status(200).json({
           status: 200,
-          message: "All student",
+          message: "All Primary student ",
           count: count,
           data: Students,
         });
@@ -401,12 +406,16 @@ class studentController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
-  static async getAllStudentToSpecificDistrict(req, res) {
+  static async getAllOrdinaryLevelStudentToSpecificSchool(req, res) {
     try {
-      const schoolId = req.params.id;
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolUserId = Token.dbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolId,
+          schoolId: schoolUserId,
+          level: "S3",
         },
         order: [["id", "ASC"]],
         include: [{ model: results }],
@@ -414,7 +423,139 @@ class studentController {
       if (Students) {
         return res.status(200).json({
           status: 200,
-          message: "All student",
+          message: "All Ordinary level student ",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getAllFemalePrimaryStudentToSpecificSchool(req, res) {
+    try {
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolUserId = Token.dbId;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolUserId,
+          gender: "female",
+          level: "P6",
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All Female primary student",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getAllMalePrimaryStudentToSpecificSchool(req, res) {
+    try {
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolUserId = Token.dbId;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolUserId,
+          gender: "male",
+          level: "P6",
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All Male primary student",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getAllMaleOrdinaryLevelStudentToSpecificSchool(req, res) {
+    try {
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolUserId = Token.dbId;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolUserId,
+          gender: "male",
+          level: "S3",
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All Male Ordinary Level student",
+          count: count,
+          data: Students,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getAllFemaleOrdinaryLevelStudentToSpecificSchool(req, res) {
+    try {
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolUserId = Token.dbId;
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: schoolUserId,
+          gender: "female",
+          level: "S3",
+        },
+        order: [["id", "ASC"]],
+        include: [{ model: results }],
+      });
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "All Female Ordinary Level student",
           count: count,
           data: Students,
         });

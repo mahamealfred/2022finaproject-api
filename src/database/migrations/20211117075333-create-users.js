@@ -22,6 +22,9 @@ module.exports = {
       schoolId: {
         type: Sequelize.STRING,
       },
+      districtId: {
+        type: Sequelize.STRING,
+      },
       role: {
         type: Sequelize.STRING,
       },

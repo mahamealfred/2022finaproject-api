@@ -3,8 +3,7 @@ import Joi from "joi";
 const SchoolValidation = (req, res, next) => {
   const Schemas = Joi.object().keys({
     name: Joi.string().min(3).required(),
-    province: Joi.string().min(3).required(),
-    district: Joi.string().min(3).required(),
+    districtId: Joi.string().min(3).required(),
     sector: Joi.string().min(3).required(),
     cell: Joi.string().min(3).required(),
     email: Joi.string().min(3).required(),

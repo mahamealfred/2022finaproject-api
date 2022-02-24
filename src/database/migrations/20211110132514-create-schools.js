@@ -10,10 +10,7 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
       },
-      province: {
-        type: Sequelize.STRING,
-      },
-      district: {
+      districtId: {
         type: Sequelize.STRING,
       },
       sector: {
@@ -22,9 +19,6 @@ module.exports = {
       cell: {
         type: Sequelize.STRING,
       },
-      // level: {
-      //   type: Sequelize.STRING,
-      // },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
