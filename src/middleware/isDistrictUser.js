@@ -1,5 +1,4 @@
 import Models from "../database/models";
-import { decode } from "../helpers/jwtTokenizer";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,17 +14,18 @@ const isDistrictUser = async (req, res, next) => {
     const decoded = jwt.verify(Token, process.env.JWT_SECRET);
     const userDistrictId = decoded.userDistrictdbId;
     req.user = decoded;
-    console.log(userDistrictId)
+    console.log(userDistrictId);
     const email = req.user.email;
-    console.log(email)
+    console.log(email);
     const found = await users.findOne({ where: { email: email } });
+    console.log(found.role);
     if (!found) {
       return res.status(404).json({
         status: 404,
         message: "User not found",
       });
     }
-    if ( found.districtId==userDistrictId) {
+    if ((found.role = "DistrictUser" && found.districtId == userDistrictId)) {
       return next();
     } else {
       return res.status(403).json({

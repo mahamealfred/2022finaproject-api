@@ -8,6 +8,9 @@ import isDistrictUser from '../middleware/isDistrictUser';
 const router=Router();
 
 router.post('/addDistrict',CheckDistrict,CheckUser, districtController.addDistrict);
+router.get('/',districtController.getAllDistrict);
 // district user
-router.get('/primarySchool',isDistrictUser, districtController.getAllPrimarySchoolToSpecificDistrict);
+router.get('/getAllSchool',isDistrictUser,districtController.getAllSchoolToSpecificDistrict);
+router.get('/getAllStudent/:id',isDistrictUser,districtController.getAllStudentToSchoolInSpecificDistrict);
+
 export default router;

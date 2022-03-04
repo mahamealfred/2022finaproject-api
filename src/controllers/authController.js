@@ -10,7 +10,7 @@ import nodemailer from "nodemailer";
 //const mailgun = require("mailgun-js");
 dotenv.config();
 
-const { users } = Models;
+const { users,districts,schools } = Models;
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 class authController {
@@ -23,19 +23,50 @@ class authController {
         });
       }
 
-      const { fullname, email, role } = req.body;
+      const { fullname, email, role,districtId,schoolId } = req.body;
       // const salt = await bcrypt.genSaltSync(10);
       // const hashedPassword = await bcrypt.hashSync(password, salt);
       const password = generateRandomPassword();
-      await users.create({
-        id: uuidv4(),
-        fullname,
-        email,
-        role,
-        isActive: "INACTIVE",
-        password,
+      const findDistrict=await districts.findOne({
+        where:{id:districtId}
       });
-
+      const findSchool=await schools.findOne({
+        where:{id:schoolId}
+      })
+      if(findDistrict){
+      
+        await users.create({
+          id: uuidv4(),
+          fullname,
+          email,
+          role,
+          isActive: "INACTIVE",
+          password,
+          districtId,
+          schoolId:null,
+        });
+  
+      }
+      else if(findSchool && findDistrict){
+        await users.create({
+          id: uuidv4(),
+          fullname,
+          email,
+          role,
+          isActive: "INACTIVE",
+          password,
+          districtId,
+          schoolId,
+        });
+       
+      }
+      else{
+        return res.status(400).json({
+          status: 400,
+          message: "Invalid credential, Either school or district not found",
+        });
+      }
+     
       const token = await encode({ email });
 
       const mail = nodemailer.createTransport({
@@ -140,7 +171,9 @@ class authController {
 
   static async getAllUser(req, res) {
     try {
-      const userData = await users.findAll();
+      const userData = await users.findAll({
+        include:[{model:districts},{model:schools}]
+      });
 
       res.status(200).json({
         status: 200,

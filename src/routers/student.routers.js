@@ -1,6 +1,7 @@
 import { Router } from "express";
 import studentController from "../controllers/studentController";
 import CheckStudent from "../middleware/CheckStudent";
+import isDistrictUser from "../middleware/isDistrictUser";
 import isSchoolUser from "../middleware/isSchoolUser";
 import StudentValidation from "../middleware/StudentValidation";
 import verifyToken from "../middleware/verifyToken";
@@ -26,6 +27,8 @@ router.get('/primaryfemaleStudents',isSchoolUser,studentController.getAllFemaleP
 router.get('/primaryMaleStudents',isSchoolUser,studentController.getAllMalePrimaryStudentToSpecificSchool);
 router.get('/ordinaryLevelMaleStudents',isSchoolUser,studentController.getAllMaleOrdinaryLevelStudentToSpecificSchool);
 router.get('/ordinaryLevelFemaleStudents',isSchoolUser,studentController.getAllFemaleOrdinaryLevelStudentToSpecificSchool);
+router.get('/specificSchool/search',isSchoolUser,studentController.search);
 //to a specific distric user
+router.get('/search',isDistrictUser,studentController.search);
 
 export default router;

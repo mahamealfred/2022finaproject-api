@@ -3,14 +3,14 @@ import Joi from "joi";
 const SignupValidation = (req, res, next) => {
   const Schemas = Joi.object().keys({
     fullname: Joi.string().min(6).required(),
-    //role: Joi.string().required(),
     email: Joi.string().email({ minDomainSegments: 2 }).required(),
     role:Joi.string().min(3).required(),
+    schoolId: Joi.string(),
+    districtId: Joi.string(),
   //   password: Joi.string()
   //     .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
   //     .required(),
    });
-
   const { error } = Schemas.validate(req.body);
 
   if (error) {

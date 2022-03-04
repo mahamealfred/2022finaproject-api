@@ -4,9 +4,11 @@ import { encode } from "../helpers/jwtTokenizer";
 import studentcoder from "../helpers/studentcoder";
 import generateRandomPassword from "../helpers/passwordGenerator";
 import { v4 as uuidv4 } from "uuid";
-import CheckStudent from "../middleware/CheckStudent";
 import { decode } from "jsonwebtoken";
+import { Sequelize } from "sequelize";
 const { students, schools, users, results } = Models;
+
+const { Op, where, cast, col } = Sequelize;
 
 class studentController {
   static async addStudent(req, res) {
@@ -67,19 +69,21 @@ class studentController {
       const dbEmail = req.student.email;
       const dbPasword = req.student.password;
       const dbStudentCode = req.student.studentcode;
+      const dbStudentId=req.student.id;
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
+    
       if (dbEmail == email) {
         if (dbStudentCode == studentCode) {
           if (dbPasword == password) {
-            const token = await encode({ email });
+            const token = await encode({ email,dbStudentCode,dbStudentId });
+             const payload =await decode(token)
             return res.status(200).json({
               status: 200,
               message: "Student logged with Token",
-              data: {
-                Student: req.student,
-                token,
-              },
+              Student: payload,
+              token,
+            
             });
           }
           return res.status(401).json({
@@ -215,18 +219,17 @@ class studentController {
 
   static async getAllprimaryStudent(req, res) {
     try {
-      const TotalStudent = await students.findAll({
-        where: { level: "P6" },
-      });
-      const TotalCount = await students.count({
-        where: { level: "P6" },
-      });
-      if (TotalStudent) {
+      
+      const {count, rows:PrimaryStudents}=await students.findAndCountAll({
+        where:{level:"P6"},
+        include:[{model:schools}]
+      })
+      if (PrimaryStudents) {
         return res.status(200).json({
           status: 200,
           message: "retrieved All Primary Students",
-          count: TotalCount,
-          data: TotalStudent,
+          count: count,
+          data: PrimaryStudents,
         });
       }
       return res.status(404).json({
@@ -240,18 +243,17 @@ class studentController {
   }
   static async getAllOrdinaryLevelStudent(req, res) {
     try {
-      const TotalStudent = await students.findAll({
-        where: { level: "S3" },
-      });
-      const TotalCount = await students.count({
-        where: { level: "S3" },
-      });
-      if (TotalStudent) {
+      
+      const {count, rows:OrdinaryLevelStudents}=await students.findAndCountAll({
+        where:{level:"S3"},
+        include:[{model:schools}]
+      })
+      if (OrdinaryLevelStudents) {
         return res.status(200).json({
           status: 200,
-          message: "retrieved All Ordinary Level Students",
-          count: TotalCount,
-          data: TotalStudent,
+          message: "retrieved All Primary Students",
+          count: count,
+          data: OrdinaryLevelStudents,
         });
       }
       return res.status(404).json({
@@ -379,10 +381,10 @@ class studentController {
       //const schoolId = req.params.id;
       const token = req.headers["token"];
       const Token = await decode(token);
-      const schoolUserId = Token.dbId;
+      const userSchoolId = Token.userSchooldbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolUserId,
+          schoolId: userSchoolId,
           level: "P6",
         },
         order: [["id", "ASC"]],
@@ -411,10 +413,10 @@ class studentController {
       //const schoolId = req.params.id;
       const token = req.headers["token"];
       const Token = await decode(token);
-      const schoolUserId = Token.dbId;
+      const userSchoolId = Token.userSchooldbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolUserId,
+          schoolId: userSchoolId,
           level: "S3",
         },
         order: [["id", "ASC"]],
@@ -443,10 +445,10 @@ class studentController {
       //const schoolId = req.params.id;
       const token = req.headers["token"];
       const Token = await decode(token);
-      const schoolUserId = Token.dbId;
+      const userSchoolId = Token.userSchooldbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolUserId,
+          schoolId: userSchoolId,
           gender: "female",
           level: "P6",
         },
@@ -476,10 +478,10 @@ class studentController {
       //const schoolId = req.params.id;
       const token = req.headers["token"];
       const Token = await decode(token);
-      const schoolUserId = Token.dbId;
+      const userSchoolId = Token.userSchooldbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolUserId,
+          schoolId: userSchoolId,
           gender: "male",
           level: "P6",
         },
@@ -509,10 +511,10 @@ class studentController {
       //const schoolId = req.params.id;
       const token = req.headers["token"];
       const Token = await decode(token);
-      const schoolUserId = Token.dbId;
+      const userSchoolId = Token.userSchooldbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolUserId,
+          schoolId: userSchoolId,
           gender: "male",
           level: "S3",
         },
@@ -542,10 +544,10 @@ class studentController {
       //const schoolId = req.params.id;
       const token = req.headers["token"];
       const Token = await decode(token);
-      const schoolUserId = Token.dbId;
+      const userSchoolId = Token.userSchooldbId;
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
-          schoolId: schoolUserId,
+          schoolId: userSchoolId,
           gender: "female",
           level: "S3",
         },
@@ -570,6 +572,46 @@ class studentController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
+  static async search(req, res) {
+    try {
+      const { searchKey } = req.query;
+
+      //   o	A manager should be able to search for an employee based on his position, name, email, phone number or code.
+      const searchQuery = [
+        where(cast(col("students.firstname"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("students.lastname"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("students.studentcode"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("students.level"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+      ];
+
+      const found = await students.findAll({
+        where: { [Op.or]: searchQuery },
+        include:[{model:results}]
+      });
+
+      return res.status(200).json({
+        status: 200,
+        found,
+        message: "Search Complete",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
+  }
+  //for specific student
+ 
+
 }
 
 export default studentController;

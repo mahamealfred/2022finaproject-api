@@ -56,13 +56,13 @@ class schoolController {
         const token = await encode({ email });
         const mail = nodemailer.createTransport({
           host: "smtp.outlook.com",
-         port: 587,
-         secure: false,
-         auth: {
-           user: "mahamealfred@outlook.com", // Your email id
-           pass: "Mahame2022", // Your password
-         },
-       });
+          port: 587,
+          secure: false,
+          auth: {
+            user: "mahamealfred@outlook.com", // Your email id
+            pass: "Mahame2022", // Your password
+          },
+        });
         const data = await mail.sendMail({
           from: "mahamealfred@outlook.com",
           to: email,
@@ -82,7 +82,7 @@ class schoolController {
             `,
         });
         try {
-          data.sendMail(data, function (error, body){
+          data.sendMail(data, function (error, body) {
             console.log(body);
             if (error) {
               console.log(error);
@@ -111,13 +111,19 @@ class schoolController {
   }
   static async getAllSchool(req, res) {
     try {
-      const { count, rows: schoolsData } = await schools.findAll();
-      res.status(200).json({
-        status: 200,
-        message: "All School",
-        count: count,
-        data: schoolsData,
+      const { count, rows: schoolsData } = await schools.findAndCountAll({
+        order: [["name", "ASC"]],
+        include: [{model:districts}]
       });
+      if (schoolsData) {
+        return res.status(200).json({
+          status: 200,
+          message: "All School",
+          count: count,
+          data: schoolsData,
+        });
+      }
+      return res.status(404).json({ status: 404, message: "No school found" });
     } catch (error) {
       res.status(500).json({ status: 500, message: "server error" });
     }
@@ -140,8 +146,7 @@ class schoolController {
     try {
       const updateSchool = {
         name: req.body.name,
-        province: req.body.province,
-        district: req.body.district,
+        districtId: req.body.districtId,
         sector: req.body.sector,
         cell: req.body.cell,
       };
@@ -204,7 +209,7 @@ class schoolController {
           message: "School not found ",
         });
       }
-      res.status(200).json({
+     return res.status(200).json({
         status: 200,
         message: "School Information",
         data: singleSchool,
