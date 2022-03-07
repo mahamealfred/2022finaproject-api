@@ -70,18 +70,19 @@ class studentController {
       const dbPasword = req.student.password;
       const dbStudentCode = req.student.studentcode;
       const dbStudentId=req.student.id;
+      const dbStudentLevel=req.student.level
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
     
       if (dbEmail == email) {
         if (dbStudentCode == studentCode) {
           if (dbPasword == password) {
-            const token = await encode({ email,dbStudentCode,dbStudentId });
+            const token = await encode({ email,dbStudentCode,dbStudentId,dbStudentLevel });
              const payload =await decode(token)
             return res.status(200).json({
               status: 200,
               message: "Student logged with Token",
-              Student: payload,
+              student: payload,
               token,
             
             });

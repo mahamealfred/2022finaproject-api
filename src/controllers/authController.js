@@ -132,22 +132,26 @@ class authController {
       }
       const dbEmail = req.user.email;
       const dbPasword = req.user.password;
+     
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
       if (dbEmail == email) {
         if (dbPasword == password) {
           const userSchooldbId=req.user.schoolId;
           const userDistrictdbId=req.user.districtId
-          const token = await encode({ email,userSchooldbId,userDistrictdbId});
+          const dbRole=req.user.role;
+          const token = await encode({ email,userSchooldbId,userDistrictdbId,dbRole});
           const decodedToken=await decode(token)
           const userSchoolId=decodedToken.userSchooldbId
           const userDistrictId=decodedToken.userDistrictdbId
           const Email=decodedToken.email
+          const role=decodedToken.dbRole
           return res.status(200).json({
             status: 200,
             message: "User logged with Token",
             data: {
               user: Email,
+              role:role,
               schoolId:userSchoolId,
               districtId:userDistrictId,
               token,

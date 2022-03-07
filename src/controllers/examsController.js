@@ -1,5 +1,6 @@
 import Models from "../database/models";
 import { v4 as uuidv4 } from "uuid";
+import { decode } from "../helpers/jwtTokenizer";
 
 const { exams, questions } = Models;
 
@@ -11,14 +12,15 @@ class examsController {
           status: 400,
           message: "Exam with this name already exist, please use onather!",
         });
-      }
-      const { name, startDate, subject,question, correct_answer, incorrect_answer } = req.body;
+      } 
+      const { name, startDate, subject,level,question, correct_answer, incorrect_answer } = req.body;
       const examId = uuidv4();
       await exams.create({
         id: examId,
         name,
         startDate,
         subject,
+        level
       });
       await questions.create({
         id: uuidv4(),
@@ -65,7 +67,7 @@ class examsController {
 
   static async updateExam(req, res) {
     try {
-      const { name, subject, startDate } = req.body;
+      const { name, subject, startDate,level } = req.body;
       const { id } = req.params;
       const found = await exams.findOne({
         where: { id },
@@ -74,6 +76,7 @@ class examsController {
         const updatedExam = await exams.update({ 
           name,
           subject,
+          level,
           startDate
          } , {
           where: {id},
@@ -146,6 +149,70 @@ return res.status(404).json({
       res.status(500).json({ status: 500, message: error.message });
     }
   }
+  static async getExamsByLevel(req,res){
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const studentLevel = Token.dbStudentLevel;
+      const findExams=await exams.findAll({
+        where:{level:studentLevel},
+        include:[{model:questions}]
+      })
+      if(findExams){
+        return res.status(200).json({
+          status:200,
+        message:"All Exams",
+        data:findExams
+        })
+      }
+      return res.status(404).json({
+        status:404,
+      message:"Exams not found",
+    
+      }) 
+    }catch (error) {
+      return res.status(500).json({
+        status:500,
+      message:"Sever error" +error.message
+     
+    })
+  }
 }
+static async getExamsAndQuestionById(req,res){
+  try {
+    const examId=req.params.id
+    const token = req.headers["token"];
+    const Token = await decode(token);
+    const studentLevel = Token.dbStudentLevel;
+    
+    const findExams=await exams.findAll({
+      where:{
+        id:examId,
+        level:studentLevel
+      },
+      include:[{model:questions}]
+    })
+    if(findExams){
+      return res.status(200).json({
+        status:200,
+      message:"All Exams",
+      data:findExams
+      })
+    }
+    return res.status(404).json({
+      status:404,
+    message:"Exams not found",
+  
+    }) 
+  }catch (error) {
+    return res.status(500).json({
+      status:500,
+    message:"Sever error" +error.message
+   
+  })
+}
+}
+}
+
 
 export default examsController;

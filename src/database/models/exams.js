@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
   exams.init({
     name: DataTypes.STRING,
     subject: DataTypes.STRING,
+    level: DataTypes.STRING,
     startDate: DataTypes.DATE
   }, {
     sequelize,
