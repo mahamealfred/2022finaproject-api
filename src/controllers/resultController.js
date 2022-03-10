@@ -64,28 +64,37 @@ class resultController {
       res.status(500).json({ status: 500, message: "server error" });
     }
   }
-  static async getAllPrimaryResultToSpecificSchool(req, res) {
+  static async getPrimaryResultBySchoolUser(req, res) {
     try {
-      const schoolId = req.params.id;
-      const { count, rows: Students } = await students.findAndCountAll({
-        where: {
-          schoolId: schoolId,
-          level: "S3",
-        },
-        order: [["id", "ASC"]],
-        include: [{ model: results }],
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolId = Token.userSchooldbId;
+      const ExamId = req.params.id;
+      const findResults = await results.findAll({
+        where: { examId: ExamId },
+        order: [["marks", "DESC"]],
+        include: [
+          { model: exams },
+          {
+            model: students,
+            where: {
+              schoolId: schoolId,
+              level: "P6",
+            },
+          },
+        ],
       });
-      if (Students) {
+
+      if (findResults) {
         return res.status(200).json({
           status: 200,
-          message: "All result for student",
-          count: count,
-          data: Students,
+          message: "All result for Primary student",
+          data: findResults,
         });
       }
-      return res.status(200).json({
-        status: 200,
-        message: "No Student found",
+      return res.status(404).json({
+        status: 404,
+        message: "No Result found",
       });
     } catch (error) {
       return res
@@ -93,6 +102,45 @@ class resultController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
+  static async getOrdinaryResultBySchoolUser(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const schoolId = Token.userSchooldbId;
+      const ExamId = req.params.id;
+      const findResults = await results.findAll({
+        where: { examId: ExamId },
+        order: [["marks", "DESC"]],
+        include: [
+          { model: exams },
+          {
+            model: students,
+            where: {
+              schoolId: schoolId,
+              level: "S3",
+            },
+          },
+        ],
+      });
+
+      if (findResults) {
+        return res.status(200).json({
+          status: 200,
+          message: "All result for Ordinary student",
+          data: findResults,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Result found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  
 
   static async deleteResult(req, res) {
     try {

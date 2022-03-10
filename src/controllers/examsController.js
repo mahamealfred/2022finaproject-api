@@ -212,6 +212,55 @@ static async getExamsAndQuestionById(req,res){
   })
 }
 }
+static async getPrimaryExams(req,res){
+  try {
+    const getExams=await exams.findAll({
+     where:{level:"P6"},
+     order: [["subject", "ASC"]]
+     
+    })
+    if(getExams){
+      return res.status(200).json({
+        status: 200,
+        message: "All Exams found",
+        data:getExams
+      });
+    }
+    return res.status(404).json({
+      status: 404,
+      message: "No exams found",
+    });
+  } catch (error) {
+    return res
+    .status(500)
+    .json({ status: 500, message: "server error:" + error.message });
+  }
+}
+static async getOrdinaryExams(req,res){
+  try {
+    const getExams=await exams.findAll({
+     where:{level:"S3"},
+     order: [["subject", "ASC"]]
+     
+    })
+    if(getExams){
+      return res.status(200).json({
+        status: 200,
+        message: "All Exams found",
+        data:getExams
+      });
+    }
+    return res.status(404).json({
+      status: 404,
+      message: "No exams found",
+    });
+  } catch (error) {
+    return res
+    .status(500)
+    .json({ status: 500, message: "server error:" + error.message });
+  }
+}
+
 }
 
 

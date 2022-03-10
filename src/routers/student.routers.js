@@ -21,6 +21,9 @@ router.get('/ordinarylevelFemaleStudent',studentController.getAllOrdinaryLevelFe
 router.get('/primarylevelFemaleStudent',studentController.getAllPrimaryLevelFemaleStudent);
 router.get('/primarylevelMaleStudent',studentController.getAllPrimaryLevelMaleStudent);
 //to specific school user
+router.post('/register',isSchoolUser, CheckStudent,studentController.addStudentBySchoolUser);
+router.get('/studentList',isSchoolUser,studentController.getAllStudentInSpecificSchool);
+router.get('/numbers',isSchoolUser,studentController.getSpecificStudentsNumber);
 router.get('/primaryStudents', isSchoolUser,studentController.getAllPrimaryStudentToSpecificSchool);
 router.get('/ordinarylevelstudents',isSchoolUser,studentController.getAllOrdinaryLevelStudentToSpecificSchool);
 router.get('/primaryfemaleStudents',isSchoolUser,studentController.getAllFemalePrimaryStudentToSpecificSchool);

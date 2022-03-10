@@ -14,5 +14,6 @@ router.put('/:id',examsController.updateExam);
 router.delete('/:id',examsController.deleteExam);
 router.get('/examsbylevel',isStudent,examsController.getExamsByLevel);
 router.get('/examsbylevel/:id',isStudent,examsController.getExamsAndQuestionById);
-
+router.get('/primaryexams',examsController.getPrimaryExams);
+router.get('/ordinarylevelexams',examsController.getOrdinaryExams);
 export default router;
