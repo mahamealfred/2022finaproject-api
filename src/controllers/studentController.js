@@ -546,6 +546,65 @@ class studentController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
+  static async getSpecificStudentsNumberInDistrict(req, res) {
+    try {
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const userSchoolId = Token.userSchooldbId;
+      const totalStudentInPrimary=await students.count({
+        where:{level:"P6",schoolId: userSchoolId,}
+      })
+      const totalMaleStudentInPrimary=await students.count({
+        where:{gender:"male",level:"P6",schoolId: userSchoolId,}
+      })
+      const totalFemaleStudentInPrimary=await students.count({
+        where:{gender:"female",level:"P6",schoolId: userSchoolId,}
+      })
+      const totalStudentInOrdinary=await students.count({
+        where:{level:"S3",schoolId: userSchoolId,}
+      })
+      const totalMaleStudentInOrdinary=await students.count({
+        where:{gender:"male",level:"S3",schoolId: userSchoolId,}
+      })
+      const totalFemaleStudentInOrdinary=await students.count({
+        where:{gender:"female",level:"S3",schoolId: userSchoolId,}
+      })
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: userSchoolId,
+          
+        },
+        order: [["level", "ASC"]],
+        
+      });
+    const data=[{
+      totalStudent: count,
+      totalStudentInPrimary:totalStudentInPrimary,
+      totalMaleStudentInPrimary:totalMaleStudentInPrimary,
+      totalFemaleStudentInPrimary:totalFemaleStudentInPrimary,
+      totalStudentInOrdinary:totalStudentInOrdinary,
+      totalMaleStudentInOrdinary:totalMaleStudentInOrdinary,
+      totalFemaleStudentInOrdinary:totalFemaleStudentInOrdinary,
+    }]
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "Number of students ",
+          data:data,
+          
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
 
 
   static async getAllPrimaryStudentToSpecificSchool(req, res) {

@@ -141,6 +141,46 @@ class resultController {
     }
   }
   
+  static async getOrdinaryResultByDistrictUser(req, res) {
+    try {
+      // const token = req.headers["token"];
+      // const Token = await decode(token);
+      // const districtlId = Token.userDistrcitdbId;
+      const {schoolId , ExamId}=req.query
+      const findResults = await results.findAll({
+        where: { examId: ExamId },
+        order: [["marks", "DESC"]],
+        include: [
+          { model: exams },
+          {
+            model: students,
+            where: {
+              schoolId: schoolId,
+              level: "S3",
+            },
+          },
+        ],
+      });
+
+      if (findResults) {
+        return res.status(200).json({
+          status: 200,
+          message: "All result for Ordinary student",
+          data: findResults,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Result found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  
+
 
   static async deleteResult(req, res) {
     try {

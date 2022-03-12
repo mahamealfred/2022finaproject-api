@@ -10,7 +10,7 @@ router.get('/',resultController.getAllResult);
 router.get('/find/:id',resultController.findOneResult);
 router.delete('/:id',resultController.deleteResult);
 router.get('/primaryresults/:id',isSchoolUser,resultController.getPrimaryResultBySchoolUser);
-router.get('/ordinaryresults/:id',isSchoolUser,resultController.getOrdinaryResultBySchoolUser);
+router.get('/ordinarylevelresults/:id',isSchoolUser,resultController.getOrdinaryResultBySchoolUser);
 
 //for specific student
 router.get('/subjectresult/:id',isStudent,resultController.getMyResult);
