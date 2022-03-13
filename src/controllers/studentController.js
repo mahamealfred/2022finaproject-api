@@ -59,12 +59,11 @@ class studentController {
   }
   static async addStudentBySchoolUser(req, res) {
     try {
-      const { firstname, lastname, email, dob, gender, level } =
-        req.body;
-        const token = req.headers["token"];
+      const { firstname, lastname, email, dob, gender, level } = req.body;
+      const token = req.headers["token"];
       const Token = await decode(token);
       const SchoolId = Token.userSchooldbId;
-      console.log(SchoolId)
+      console.log(SchoolId);
       // const salt = await bcrypt.genSaltSync(10);
       // const hashPassword = await bcrypt.hashSync(password, salt);
       const studentCode = await studentcoder();
@@ -88,7 +87,7 @@ class studentController {
           dob,
           gender,
           level,
-          schoolId:SchoolId,
+          schoolId: SchoolId,
           password,
         });
         return res.status(201).json({
@@ -118,23 +117,29 @@ class studentController {
       }
       const dbEmail = req.student.email;
       const dbPasword = req.student.password;
+      const fullName = `${req.student.firstname} ${req.student.lastname}`;
       const dbStudentCode = req.student.studentcode;
-      const dbStudentId=req.student.id;
-      const dbStudentLevel=req.student.level
+      const dbStudentId = req.student.id;
+      const dbStudentLevel = req.student.level;
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
-    
+
       if (dbEmail == email) {
         if (dbStudentCode == studentCode) {
           if (dbPasword == password) {
-            const token = await encode({ email,dbStudentCode,dbStudentId,dbStudentLevel });
-             const payload =await decode(token)
+            const data = {
+              email,
+              dbStudentCode,
+              dbStudentId,
+              fullName,
+              dbStudentLevel,
+            };
+            const token = await encode(data);
             return res.status(200).json({
               status: 200,
               message: "Student logged with Token",
-              student: payload,
+              student: data,
               token,
-            
             });
           }
           return res.status(401).json({
@@ -270,11 +275,10 @@ class studentController {
 
   static async getAllprimaryStudent(req, res) {
     try {
-      
-      const {count, rows:PrimaryStudents}=await students.findAndCountAll({
-        where:{level:"P6"},
-        include:[{model:schools}]
-      })
+      const { count, rows: PrimaryStudents } = await students.findAndCountAll({
+        where: { level: "P6" },
+        include: [{ model: schools }],
+      });
       if (PrimaryStudents) {
         return res.status(200).json({
           status: 200,
@@ -294,11 +298,11 @@ class studentController {
   }
   static async getAllOrdinaryLevelStudent(req, res) {
     try {
-      
-      const {count, rows:OrdinaryLevelStudents}=await students.findAndCountAll({
-        where:{level:"S3"},
-        include:[{model:schools}]
-      })
+      const { count, rows: OrdinaryLevelStudents } =
+        await students.findAndCountAll({
+          where: { level: "S3" },
+          include: [{ model: schools }],
+        });
       if (OrdinaryLevelStudents) {
         return res.status(200).json({
           status: 200,
@@ -434,46 +438,44 @@ class studentController {
       const token = req.headers["token"];
       const Token = await decode(token);
       const userSchoolId = Token.userSchooldbId;
-      const totalStudentInPrimary=await students.count({
-        where:{level:"P6",schoolId: userSchoolId,}
-      })
-      const totalMaleStudentInPrimary=await students.count({
-        where:{gender:"male",level:"P6",schoolId: userSchoolId,}
-      })
-      const totalFemaleStudentInPrimary=await students.count({
-        where:{gender:"female",level:"P6",schoolId: userSchoolId,}
-      })
-      const totalStudentInOrdinary=await students.count({
-        where:{level:"S3",schoolId: userSchoolId,}
-      })
-      const totalMaleStudentInOrdinary=await students.count({
-        where:{gender:"male",level:"S3",schoolId: userSchoolId,}
-      })
-      const totalFemaleStudentInOrdinary=await students.count({
-        where:{gender:"female",level:"S3",schoolId: userSchoolId,}
-      })
+      const totalStudentInPrimary = await students.count({
+        where: { level: "P6", schoolId: userSchoolId },
+      });
+      const totalMaleStudentInPrimary = await students.count({
+        where: { gender: "male", level: "P6", schoolId: userSchoolId },
+      });
+      const totalFemaleStudentInPrimary = await students.count({
+        where: { gender: "female", level: "P6", schoolId: userSchoolId },
+      });
+      const totalStudentInOrdinary = await students.count({
+        where: { level: "S3", schoolId: userSchoolId },
+      });
+      const totalMaleStudentInOrdinary = await students.count({
+        where: { gender: "male", level: "S3", schoolId: userSchoolId },
+      });
+      const totalFemaleStudentInOrdinary = await students.count({
+        where: { gender: "female", level: "S3", schoolId: userSchoolId },
+      });
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
           schoolId: userSchoolId,
-          
         },
         order: [["level", "ASC"]],
         include: [{ model: results }],
       });
-     
+
       if (Students) {
         return res.status(200).json({
           status: 200,
           message: "All  student ",
           totalStudent: count,
-          totalStudentInPrimary:totalStudentInPrimary,
-          totalMaleStudentInPrimary:totalMaleStudentInPrimary,
-          totalFemaleStudentInPrimary:totalFemaleStudentInPrimary,
-          totalStudentInOrdinary:totalStudentInOrdinary,
-          totalMaleStudentInOrdinary:totalMaleStudentInOrdinary,
-          totalFemaleStudentInOrdinary:totalFemaleStudentInOrdinary,
-          data:Students,
-          
+          totalStudentInPrimary: totalStudentInPrimary,
+          totalMaleStudentInPrimary: totalMaleStudentInPrimary,
+          totalFemaleStudentInPrimary: totalFemaleStudentInPrimary,
+          totalStudentInOrdinary: totalStudentInOrdinary,
+          totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
+          totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
+          data: Students,
         });
       }
       return res.status(200).json({
@@ -493,47 +495,46 @@ class studentController {
       const token = req.headers["token"];
       const Token = await decode(token);
       const userSchoolId = Token.userSchooldbId;
-      const totalStudentInPrimary=await students.count({
-        where:{level:"P6",schoolId: userSchoolId,}
-      })
-      const totalMaleStudentInPrimary=await students.count({
-        where:{gender:"male",level:"P6",schoolId: userSchoolId,}
-      })
-      const totalFemaleStudentInPrimary=await students.count({
-        where:{gender:"female",level:"P6",schoolId: userSchoolId,}
-      })
-      const totalStudentInOrdinary=await students.count({
-        where:{level:"S3",schoolId: userSchoolId,}
-      })
-      const totalMaleStudentInOrdinary=await students.count({
-        where:{gender:"male",level:"S3",schoolId: userSchoolId,}
-      })
-      const totalFemaleStudentInOrdinary=await students.count({
-        where:{gender:"female",level:"S3",schoolId: userSchoolId,}
-      })
+      const totalStudentInPrimary = await students.count({
+        where: { level: "P6", schoolId: userSchoolId },
+      });
+      const totalMaleStudentInPrimary = await students.count({
+        where: { gender: "male", level: "P6", schoolId: userSchoolId },
+      });
+      const totalFemaleStudentInPrimary = await students.count({
+        where: { gender: "female", level: "P6", schoolId: userSchoolId },
+      });
+      const totalStudentInOrdinary = await students.count({
+        where: { level: "S3", schoolId: userSchoolId },
+      });
+      const totalMaleStudentInOrdinary = await students.count({
+        where: { gender: "male", level: "S3", schoolId: userSchoolId },
+      });
+      const totalFemaleStudentInOrdinary = await students.count({
+        where: { gender: "female", level: "S3", schoolId: userSchoolId },
+      });
       const { count, rows: Students } = await students.findAndCountAll({
         where: {
           schoolId: userSchoolId,
-          
         },
         order: [["level", "ASC"]],
-        
       });
-    const data=[{
-      totalStudent: count,
-      totalStudentInPrimary:totalStudentInPrimary,
-      totalMaleStudentInPrimary:totalMaleStudentInPrimary,
-      totalFemaleStudentInPrimary:totalFemaleStudentInPrimary,
-      totalStudentInOrdinary:totalStudentInOrdinary,
-      totalMaleStudentInOrdinary:totalMaleStudentInOrdinary,
-      totalFemaleStudentInOrdinary:totalFemaleStudentInOrdinary,
-    }]
+      const data = [
+        {
+          totalStudent: count,
+          totalStudentInPrimary: totalStudentInPrimary,
+          totalMaleStudentInPrimary: totalMaleStudentInPrimary,
+          totalFemaleStudentInPrimary: totalFemaleStudentInPrimary,
+          totalStudentInOrdinary: totalStudentInOrdinary,
+          totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
+          totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
+        },
+      ];
       if (Students) {
         return res.status(200).json({
           status: 200,
           message: "Number of students ",
-          data:data,
-          
+          data: data,
         });
       }
       return res.status(200).json({
@@ -546,7 +547,6 @@ class studentController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
-
 
   static async getAllPrimaryStudentToSpecificSchool(req, res) {
     try {
@@ -766,7 +766,7 @@ class studentController {
 
       const found = await students.findAll({
         where: { [Op.or]: searchQuery },
-        include:[{model:results}]
+        include: [{ model: results }],
       });
 
       return res.status(200).json({
@@ -782,8 +782,6 @@ class studentController {
     }
   }
   //for specific student
- 
-
 }
 
 export default studentController;

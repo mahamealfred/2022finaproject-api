@@ -6,7 +6,7 @@ const { DB_USER, DB_PASSWORD, DB_NAME, DB_HOST, DB_PORT, DATABASE_URL, DB_NAME_T
 module.exports = {
 	development: {
 		username:"postgres" ,
-		password: "mahame",
+		password: "password",
 		database: "QualityEducationDb",
 		host: "localhost",
 		dialect: 'postgres',
