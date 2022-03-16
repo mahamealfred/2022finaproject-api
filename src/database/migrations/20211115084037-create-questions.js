@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       incorrect_answer: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
       },
       correct_answer: {
         type: Sequelize.STRING
