@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { decode } from "jsonwebtoken";
 import { Sequelize } from "sequelize";
 const { students, schools, users, results, exams } = Models;
-const {parse} = require('json-parser')
+
 
 const { Op, where, cast, col } = Sequelize;
 
@@ -118,6 +118,7 @@ class studentController {
       }
       const dbEmail = req.student.email;
       const dbPasword = req.student.password;
+      const fullName = `${req.student.firstname} ${req.student.lastname}`;
       const dbStudentCode = req.student.studentcode;
       const dbStudentId = req.student.id;
       const dbStudentLevel = req.student.level;
@@ -127,17 +128,18 @@ class studentController {
       if (dbEmail == email) {
         if (dbStudentCode == studentCode) {
           if (dbPasword == password) {
-            const token = await encode({
+            const data = {
               email,
               dbStudentCode,
               dbStudentId,
+              fullName,
               dbStudentLevel,
-            });
-            const payload = await decode(token);
+            };
+            const token = await encode(data);
             return res.status(200).json({
               status: 200,
               message: "Student logged with Token",
-              student: payload,
+              student: data,
               token,
             });
           }
@@ -347,6 +349,7 @@ class studentController {
     }
   }
 
+
   static async getAllOrdinaryLevelFemaleStudent(req, res) {
     try {
       const { count, rows: Students } = await students.findAndCountAll({
@@ -518,6 +521,35 @@ class studentController {
         },
         order: [["level", "ASC"]],
       });
+      const primaryPercentage = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+       
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "P6" },
+            attributes: []
+          },
+        ],
+      });
+      const ordinaryPercentage = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+       
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "S3" },
+            attributes: []
+          },
+        ],
+      });
+
       const data = [
         {
           totalStudent: count,
@@ -527,8 +559,11 @@ class studentController {
           totalStudentInOrdinary: totalStudentInOrdinary,
           totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
           totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
+          primaryStudentPercentage:primaryPercentage,
+          ordinaryStudentPercentage:ordinaryPercentage
         },
       ];
+      // console.log(data[0].ordinaryStudentPercentage[0].total)
       if (Students) {
         return res.status(200).json({
           status: 200,
@@ -546,6 +581,8 @@ class studentController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
+ 
+  
   static async getSpecificStudentsNumberInDistrict(req, res) {
     try {
       //const schoolId = req.params.id;

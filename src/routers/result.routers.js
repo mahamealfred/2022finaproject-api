@@ -12,6 +12,14 @@ router.delete('/:id',resultController.deleteResult);
 router.get('/primaryresults/:id',isSchoolUser,resultController.getPrimaryResultBySchoolUser);
 router.get('/ordinarylevelresults/:id',isSchoolUser,resultController.getOrdinaryResultBySchoolUser);
 
+//school user
+router.get('/percentagemarksprimaryresults',isSchoolUser,resultController.getPercentageMarksOfPrimaryStudentsInSpecificSchool);
+router.get('/percentageprimaryresultsbasedongender',isSchoolUser,resultController.getPercentageResultBasedOnGenderBySchoolUser);
+router.get('/percentageprimaryresults',isSchoolUser,resultController.getPercentageResultsOfAllStudentsBySchoolUser);
+
+router.get('/percentagemarksordinaryresults',isSchoolUser,resultController.getPercentageMarksOfOrdinaryStudentsInSpecificSchool);
+router.get('/percentageordinaryresultsbasedongender',isSchoolUser,resultController.getPercentageResultBasedOnGenderInOrdinaryBySchoolUser);
+
 //for specific student
 router.get('/subjectresult/:id',isStudent,resultController.getMyResult);
 

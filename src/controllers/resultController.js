@@ -2,6 +2,7 @@ import Models from "../database/models";
 import { v4 as uuidv4 } from "uuid";
 import { decode } from "../helpers/jwtTokenizer";
 const { results, exams, students } = Models;
+import { Sequelize } from "sequelize";
 
 class resultController {
   static async addResult(req, res) {
@@ -140,13 +141,13 @@ class resultController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
-  
+
   static async getOrdinaryResultByDistrictUser(req, res) {
     try {
       // const token = req.headers["token"];
       // const Token = await decode(token);
       // const districtlId = Token.userDistrcitdbId;
-      const {schoolId , ExamId}=req.query
+      const { schoolId, ExamId } = req.query;
       const findResults = await results.findAll({
         where: { examId: ExamId },
         order: [["marks", "DESC"]],
@@ -179,8 +180,6 @@ class resultController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
-  
-
 
   static async deleteResult(req, res) {
     try {
@@ -205,6 +204,203 @@ class resultController {
       res.status(500).json({ status: 500, message: error.message });
     }
   }
+  static async getPercentageResultsOfAllStudentsBySchoolUser(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const userSchoolId = Token.userSchooldbId;
+      const Results = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+       
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "P6" },
+            attributes: []
+          },
+        ],
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "students Percentage",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: error.message });
+    }
+  }
+  static async getPercentageResultBasedOnGenderBySchoolUser(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const userSchoolId = Token.userSchooldbId;
+      const Results = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+        group: ["student.id"],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "P6" },
+            attributes: [
+              "gender",
+            ],
+          },
+        ],
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "students Percentage",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: error.message });
+    }
+  }
+  static async getPercentageMarksOfPrimaryStudentsInSpecificSchool(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const userSchoolId = Token.userSchooldbId;
+      const Results = await results.findAll({
+        attributes: [
+          "examId",
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("examId")), "AssessmentCount"],
+        ],
+        group: ["examId", "exam.id"],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          { model: exams, attributes: [[Sequelize.col("name"), "Name"]] },
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "P6" },
+            attributes: [],
+          },
+        ],
+        // }]
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "student with total",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: "Server error :" + error.message,
+      });
+    }
+  }
+  static async getPercentageResultBasedOnGenderInOrdinaryBySchoolUser(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const userSchoolId = Token.userSchooldbId;
+      const Results = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+        group: ["student.id"],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "S3" },
+            attributes: [
+              "gender",
+            ],
+          },
+        ],
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "students Percentage",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: error.message });
+    }
+  }
+
+  static async getPercentageMarksOfOrdinaryStudentsInSpecificSchool(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const userSchoolId = Token.userSchooldbId;
+      const Results = await results.findAll({
+        attributes: [
+          "examId",
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("examId")), "AssessmentCount"],
+        ],
+        group: ["examId", "exam.id"],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          { model: exams, attributes: [[Sequelize.col("name"), "Name"]] },
+          {
+            model: students,
+            where: { schoolId: userSchoolId, level: "S3" },
+            attributes: [],
+          },
+        ],
+        // }]
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "student with total",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: "Server error :" + error.message,
+      });
+    }
+  }
+
   static async findOneResult(req, res) {
     try {
       const modelId = req.params.id;

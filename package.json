@@ -21,7 +21,7 @@
     "joi": "^17.4.2",
     "json-parser": "^3.1.2",
     "jsonwebtoken": "^8.5.1",
-    "mailgun-js": "^0.22.0",
+    "mailgun-js": "^0.6.7",
     "method-override": "^3.0.0",
     "multer": "^1.4.3",
     "nodemailer": "^6.7.2",
