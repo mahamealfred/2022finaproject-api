@@ -254,6 +254,7 @@ static async getOrdinaryExams(req,res){
   }
 }
 
+
 }
 
 

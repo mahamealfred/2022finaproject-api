@@ -160,6 +160,34 @@ class questionsController {
        });
      }
  }
+ static async getQuestionByExamId(req,res){
+   try {
+     const examId= req.params.id
+     const allQuestion=await questions.findAll({
+       where:{examId:examId}
+     })
+     if(allQuestion)
+     {
+       return res.status(200).json({
+         status:200,
+         message:"All Question",
+         data:allQuestion
+       })
+     }
+     return res.status(404).json({
+      status: 404,
+      message: "No QUESTION FOUND",
+      
+    });
+     
+   } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+    });
+   }
+ }
+ 
  
 }
 

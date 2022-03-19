@@ -7,20 +7,16 @@ import { Sequelize } from "sequelize";
 class resultController {
   static async addResult(req, res) {
     try {
-      const { marks, examId, studentId } = req.body;
-      const foundStudent = await students.findOne({
-        where: { id: studentId },
-      });
-      if (foundStudent) {
-        const findExam = await exams.findOne({
-          where: { id: examId },
-        });
-        if (findExam) {
-          const createdResult = await results.create({
+
+      const { marks,examId } = req.body;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const studentId = Token.dbStudentId;
+      const createdResult = await results.create({
             id: uuidv4(),
             marks,
             examId,
-            studentId,
+            studentId:studentId,
           });
           return res.status(200).json({
             status: 200,
@@ -28,16 +24,8 @@ class resultController {
             data: createdResult,
           });
         }
-        return res.status(403).json({
-          status: 403,
-          message: "Exam does not exist!",
-        });
-      }
-      return res.status(404).json({
-        status: 404,
-        message: "Student not found!",
-      });
-    } catch (error) {
+        
+     catch (error) {
       return res.status(500).json({
         status: 500,
         message: error.message,
