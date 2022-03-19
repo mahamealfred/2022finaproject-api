@@ -5,7 +5,6 @@ const SignupValidation = (req, res, next) => {
     fullname: Joi.string().min(6).required(),
     email: Joi.string().email({ minDomainSegments: 2 }).required(),
     role:Joi.string().min(3).required(),
-    schoolId: Joi.string(),
     districtId: Joi.string(),
   //   password: Joi.string()
   //     .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))

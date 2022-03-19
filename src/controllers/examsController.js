@@ -13,7 +13,7 @@ class examsController {
           message: "Exam with this name already exist, please use onather!",
         });
       } 
-      const { name, startDate, subject,level,question, correct_answer, incorrect_answer } = req.body;
+      const { name, startDate, subject,level } = req.body;
       const examId = uuidv4();
       await exams.create({
         id: examId,
@@ -22,14 +22,7 @@ class examsController {
         subject,
         level
       });
-      await questions.create({
-        id: uuidv4(),
-        question,
-        incorrect_answer,
-        correct_answer,
-        examId
-      })
-      console.log(incorrect_answer)
+     
       return res.status(200).json({
         status: 200,
         message: "Exam have been added",

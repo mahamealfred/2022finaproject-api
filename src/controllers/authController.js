@@ -23,16 +23,14 @@ class authController {
         });
       }
 
-      const { fullname, email, role,districtId,schoolId } = req.body;
+      const { fullname, email, role,districtId } = req.body;
       // const salt = await bcrypt.genSaltSync(10);
       // const hashedPassword = await bcrypt.hashSync(password, salt);
       const password = generateRandomPassword();
       const findDistrict=await districts.findOne({
         where:{id:districtId}
       });
-      const findSchool=await schools.findOne({
-        where:{id:schoolId}
-      })
+      
       if(findDistrict){
       
         await users.create({
@@ -43,27 +41,27 @@ class authController {
           isActive: "INACTIVE",
           password,
           districtId,
-          schoolId:null,
+          schoolId:null
         });
   
       }
-      else if(findSchool && findDistrict){
-        await users.create({
-          id: uuidv4(),
-          fullname,
-          email,
-          role,
-          isActive: "INACTIVE",
-          password,
-          districtId,
-          schoolId,
-        });
+      // else if(findSchool && findDistrict){
+      //   await users.create({
+      //     id: uuidv4(),
+      //     fullname,
+      //     email,
+      //     role,
+      //     isActive: "INACTIVE",
+      //     password,
+      //     districtId,
+      //     schoolId,
+      //   });
        
-      }
+      // }
       else{
-        return res.status(400).json({
-          status: 400,
-          message: "Invalid credential, Either school or district not found",
+        return res.status(404).json({
+          status: 404,
+          message: "Invalid credential,District not found",
         });
       }
      
