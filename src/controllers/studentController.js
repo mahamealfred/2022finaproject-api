@@ -273,19 +273,72 @@ class studentController {
       });
     }
   }
+static async getAllStudentsNumber(req,res){
+  try {
+    const totalNumberOfStudentInPrimary=await students.count({
+      where:{level:"P6"}
+    })
+    const totalNumberOfMaleStudentInPrimary=await students.count({
+      where:{level:"P6",gender:"male"}
+    })
+    const totalNumberOfFemaleStudentInPrimary=await students.count({
+      where:{level:"P6",gender:"female"}
+    })
+    const totalNumberOfStudentInOrdinaryLevel=await students.count({
+      where:{level:"S3"}
+    })
+    const totalNumberOfMaleStudentInOrdinaryLevel=await students.count({
+      where:{level:"S3",gender:"male"}
+    })
+    const totalNumberOfFemaleStudentInOrdinaryLevel=await students.count({
+      where:{level:"S3",gender:"female"}
+    })
+    const totalNumberOfAssessmentInPrimary=await exams.count({
+      where:{level:"P6"}
+    })
+    const totalNumberOfAssessmentInOrdinaryLevel=await exams.count({
+      where:{level:"S3"}
+    })
+    const numberOfSchool=await schools.count();
+    const numberofAssessment=await exams.count();
+    const data={
+      totalNumberOfStudentInPrimary,
+      totalNumberOfMaleStudentInPrimary,
+      totalNumberOfFemaleStudentInPrimary,
+      totalNumberOfAssessmentInPrimary,
+      totalNumberOfStudentInOrdinaryLevel,
+      totalNumberOfMaleStudentInOrdinaryLevel,
+      totalNumberOfFemaleStudentInOrdinaryLevel,
+      totalNumberOfAssessmentInOrdinaryLevel,
+      numberOfSchool,
+      numberofAssessment,
 
+    }
+    return res.status(200).json({
+      status:200,
+      message:"Retreive Data",
+      data:data
+    })
+    
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ status: 500, message: "server error" });
+  }
+}
   static async getAllprimaryStudent(req, res) {
     try {
       const { count, rows: PrimaryStudents } = await students.findAndCountAll({
         where: { level: "P6" },
         include: [{ model: schools }],
       });
+      
+      const  response={count,PrimaryStudents}
       if (PrimaryStudents) {
         return res.status(200).json({
           status: 200,
           message: "retrieved All Primary Students",
           count: count,
-          data: PrimaryStudents,
+          data: response,
         });
       }
       return res.status(404).json({
@@ -297,6 +350,7 @@ class studentController {
       return res.status(500).json({ status: 500, message: "server error" });
     }
   }
+  
   static async getAllOrdinaryLevelStudent(req, res) {
     try {
       const { count, rows: OrdinaryLevelStudents } =
@@ -304,12 +358,13 @@ class studentController {
           where: { level: "S3" },
           include: [{ model: schools }],
         });
+        const response ={count, OrdinaryLevelStudents}
       if (OrdinaryLevelStudents) {
         return res.status(200).json({
           status: 200,
-          message: "retrieved All Primary Students",
+          message: "retrieved All Ordinary Level Students",
           count: count,
-          data: OrdinaryLevelStudents,
+          data: response,
         });
       }
       return res.status(404).json({

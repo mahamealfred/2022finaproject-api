@@ -35,4 +35,7 @@ router.get('/specificSchool/search',isSchoolUser,studentController.search);
 router.get('/search',isDistrictUser,studentController.search);
 router.get('/studentsmarks/:id',studentController.getMarksOfStudentsInSpecificSchool);
 
+//admin
+router.get('/studentnumbers',studentController.getAllStudentsNumber);
+
 export default router;

@@ -389,6 +389,46 @@ class resultController {
     }
   }
 
+  //Admin
+  static async getPercentageResultBasedOnGenderInPrimary(req, res) {
+    try {
+      
+      const Results = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+        group: ["student.id"],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: {  level: "P6" },
+            attributes: [
+              [Sequelize.col("gender"), "gender"],
+            ],
+          },
+        ],
+      
+      });
+
+      console.log('data..:',Results[0])
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "students Percentage",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: error.message });
+    }
+  }
+
   static async findOneResult(req, res) {
     try {
       const modelId = req.params.id;

@@ -22,5 +22,7 @@ router.get('/percentageordinaryresultsbasedongender',isSchoolUser,resultControll
 
 //for specific student
 router.get('/subjectresult/:id',isStudent,resultController.getMyResult);
+//admin
+router.get('/percentagemarks',resultController.getPercentageResultBasedOnGenderInPrimary);
 
 export default router;
