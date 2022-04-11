@@ -9,7 +9,7 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-const { schools, users, districts } = Models;
+const { schools, users, districts,students,results} = Models;
 
 class schoolController {
   static async addSchool(req, res) {
@@ -202,6 +202,7 @@ class schoolController {
       const modelId = req.params.id;
       const singleSchool = await schools.findOne({
         where: { id: modelId },
+        include:[{model:students,include:[{model:results}]}]
       });
       if (!singleSchool) {
         res.status(404).json({

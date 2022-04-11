@@ -24,5 +24,13 @@ router.get('/percentageordinaryresultsbasedongender',isSchoolUser,resultControll
 router.get('/subjectresult/:id',isStudent,resultController.getMyResult);
 //admin
 router.get('/percentagemarks',resultController.getPercentageResultBasedOnGenderInPrimary);
-
+router.get('/persentageresultsinallassessment',resultController.getPercentageResultOfPriamryStudentsInAllAssessment);
+router.get('/topprimaryschool',resultController.getTopPrimarySchool);
+router.get('/topordinarylevelresult',resultController.getTopOrdinarySchool);
+router.get('/ordinarylevelpercentagemarks',resultController.getPercentageResultBasedOnGenderInOrdinaryLevel);
+router.get('/ordinarylevelpersentageresultsinallassessment',resultController.getPercentageResultOfOrdinaryStudentsInAllAssessment);
+router.get('/primarylevelpercentagebaseongender/:id',resultController.getPrimaryPercentageResultBasedOnGenderByAdmin);
+router.get('/ordinarylevelpercentagebasedongender/:id',resultController.getOrdinaryPercentageResultBasedOnGenderByAdmin);
+router.get('/ordinarypercentageinassessmentinspecificschool/:id',resultController.getPercentageMarksOfOrdinaryLevelStudentsInSpecificSchoolByAdmin)
+router.get('/primarypercentageinassessmentinspecificschool/:id',resultController.getPercentageMarksOfPrimaryStudentsInSpecificSchoolByAdmin);
 export default router;

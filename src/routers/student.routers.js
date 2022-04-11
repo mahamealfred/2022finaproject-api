@@ -20,6 +20,7 @@ router.get('/ordinarylevelMaleStudent',studentController.getAllOrdinaryLevelMale
 router.get('/ordinarylevelFemaleStudent',studentController.getAllOrdinaryLevelFemaleStudent);
 router.get('/primarylevelFemaleStudent',studentController.getAllPrimaryLevelFemaleStudent);
 router.get('/primarylevelMaleStudent',studentController.getAllPrimaryLevelMaleStudent);
+router.get('/numbersinspecificschool/:id',studentController.getSpecificStudentsNumberInSchoolByAdmin);
 //to specific school user
 router.post('/register',isSchoolUser, CheckStudent,studentController.addStudentBySchoolUser);
 router.get('/studentList',isSchoolUser,studentController.getAllStudentInSpecificSchool);
@@ -37,5 +38,6 @@ router.get('/studentsmarks/:id',studentController.getMarksOfStudentsInSpecificSc
 
 //admin
 router.get('/studentnumbers',studentController.getAllStudentsNumber);
+router.get('/schoolId/:id',studentController.getStudentsBySchoolId);
 
 export default router;

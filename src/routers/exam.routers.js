@@ -9,7 +9,7 @@ const router=Router();
 
 router.post('/', ExamValidation, CheckExam, examsController.addExam);
 router.get('/',examsController.getAllExam);
-router.get('/find/:id',examsController.findOneExam);
+router.get('/findexam/:id',examsController.findOneExam);
 router.put('/:id',examsController.updateExam);
 router.delete('/:id',examsController.deleteExam);
 router.get('/examsbylevel',isStudent,examsController.getExamsByLevel);

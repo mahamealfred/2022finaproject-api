@@ -546,6 +546,96 @@ static async getAllStudentsNumber(req,res){
     }
   }
 
+  static async getSpecificStudentsNumberInSchoolByAdmin(req, res) {
+    try {
+    
+      const SchoolId = req.params.id
+      const totalStudentInPrimary = await students.count({
+        where: { level: "P6", schoolId: SchoolId },
+      });
+      const totalMaleStudentInPrimary = await students.count({
+        where: { gender: "male", level: "P6", schoolId: SchoolId },
+      });
+      const totalFemaleStudentInPrimary = await students.count({
+        where: { gender: "female", level: "P6", schoolId: SchoolId },
+      });
+      const totalStudentInOrdinary = await students.count({
+        where: { level: "S3", schoolId: SchoolId },
+      });
+      const totalMaleStudentInOrdinary = await students.count({
+        where: { gender: "male", level: "S3", schoolId: SchoolId },
+      });
+      const totalFemaleStudentInOrdinary = await students.count({
+        where: { gender: "female", level: "S3", schoolId: SchoolId },
+      });
+      const { count, rows: Students } = await students.findAndCountAll({
+        where: {
+          schoolId: SchoolId,
+        },
+        order: [["level", "ASC"]],
+      });
+      const primaryPercentage = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+       
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: SchoolId, level: "P6" },
+            attributes: []
+          },
+        ],
+      });
+      const ordinaryPercentage = await results.findAll({
+        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
+       
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        include: [
+          {
+            model: students,
+            where: { schoolId: SchoolId, level: "S3" },
+            attributes: []
+          },
+        ],
+      });
+
+      const data = [
+        {
+          totalStudent: count,
+          totalStudentInPrimary: totalStudentInPrimary,
+          totalMaleStudentInPrimary: totalMaleStudentInPrimary,
+          totalFemaleStudentInPrimary: totalFemaleStudentInPrimary,
+          totalStudentInOrdinary: totalStudentInOrdinary,
+          totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
+          totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
+          primaryStudentPercentage:primaryPercentage,
+          ordinaryStudentPercentage:ordinaryPercentage
+        },
+      ];
+      // console.log(data[0].ordinaryStudentPercentage[0].total)
+      if (Students) {
+        return res.status(200).json({
+          status: 200,
+          message: "Number of students ",
+          data: data,
+        });
+      }
+      return res.status(200).json({
+        status: 200,
+        message: "No Student found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+ 
+
   static async getSpecificStudentsNumber(req, res) {
     try {
       //const schoolId = req.params.id;
@@ -1005,6 +1095,29 @@ static async getAllStudentsNumber(req,res){
         status: 500,
         message: error.message,
       });
+    }
+  }
+  static async getStudentsBySchoolId(req, res) {
+    try {
+      const modelId = req.params.id;
+      const Students = await students.findAll({
+        where: { schoolId: modelId },
+        include:[{model: results}]
+      });
+      if (!Students) {
+       return res.status(404).json({
+          status: 404,
+          message: "Students not found ",
+        });
+      }
+     return res.status(200).json({
+        status: 200,
+        message: "student  Informations",
+        data: Students,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({status: 500, error:"Sever error " +error.message });
     }
   }
   //for specific student

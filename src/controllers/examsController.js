@@ -36,8 +36,6 @@ class examsController {
   }
   static async getAllExam(req, res) {
     try {
-      
-
       const { count, rows: examsData } = await exams.findAndCountAll({
         
         include: [
