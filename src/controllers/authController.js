@@ -159,8 +159,8 @@ class authController {
         
         }
       }
-      return res.status(401).json({
-        status: 401,
+      return res.status(400).json({
+        status: 400,
         message: "Password is not correct",
       });
     } catch (error) {

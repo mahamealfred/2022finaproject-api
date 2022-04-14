@@ -271,7 +271,7 @@ class resultController {
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
-        group: ["student.id"],
+        group: ["student.gender"],
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
@@ -307,7 +307,7 @@ class resultController {
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
-        group: ["student.id"],
+        group: ["student.gender"],
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
@@ -792,6 +792,88 @@ class resultController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
+  static async getDifferentInPerformanceForPrimaryStudentByAdmin(req, res) {
+    try {
+      const SchoolId=req.params.id;
+      const Results = await results.findAll({
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
+        ],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        group: [ "studentId","student.id"],
+        include: [
+          {
+            model: students,
+            where: { level: "P6" ,schoolId:SchoolId},
+            attributes: [],
+            raw: true,    
+          },
+         
+        ],
+      });
+      console.log("results..", Results);
+
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "Assessment result Performance",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getDifferentInPerformanceForOrdinaryLevlStudentByAdmin(req, res) {
+    try {
+      const SchoolId=req.params.id;
+      const Results = await results.findAll({
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
+        ],
+        raw: true,
+        order: Sequelize.literal("total DESC"),
+        group: [ "studentId","student.id"],
+        include: [
+          {
+            model: students,
+            where: { level: "S3" ,schoolId:SchoolId},
+            attributes: [],
+            raw: true,    
+          },
+         
+        ],
+      });
+      console.log("results..", Results);
+
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "Assessment result Performance In ordinary Levl",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
   static async findOneResult(req, res) {
     try {
       const modelId = req.params.id;
@@ -814,6 +896,7 @@ class resultController {
       res.status(500).json({ status: 500, message: error.message });
     }
   }
+
   static async getMyResult(req, res) {
     try {
       const examId = req.params.id;

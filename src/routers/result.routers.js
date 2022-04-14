@@ -33,4 +33,6 @@ router.get('/primarylevelpercentagebaseongender/:id',resultController.getPrimary
 router.get('/ordinarylevelpercentagebasedongender/:id',resultController.getOrdinaryPercentageResultBasedOnGenderByAdmin);
 router.get('/ordinarypercentageinassessmentinspecificschool/:id',resultController.getPercentageMarksOfOrdinaryLevelStudentsInSpecificSchoolByAdmin)
 router.get('/primarypercentageinassessmentinspecificschool/:id',resultController.getPercentageMarksOfPrimaryStudentsInSpecificSchoolByAdmin);
+router.get('/primaryassessementsanalysis/:id',resultController.getDifferentInPerformanceForPrimaryStudentByAdmin);
+router.get('/ordinaryassessmentsanalysis/:id',resultController.getDifferentInPerformanceForOrdinaryLevlStudentByAdmin);
 export default router;
