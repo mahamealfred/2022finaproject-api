@@ -236,7 +236,7 @@ class resultController {
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
-        group: ["student.id"],
+        group: ["student.gender"],
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [

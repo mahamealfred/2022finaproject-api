@@ -1,9 +1,9 @@
 import Models from '../database/models';
 
 const CheckDistrict = async (req, res, next) => {
-	const { districtName } = req.body;
+	const { name } = req.body;
 	const { districts } = Models;
-	const found = await districts.findOne({ where: { name:districtName } });
+	const found = await districts.findOne({ where: { name:name } });
 	if (found) {
 		 req.district = found
 		 return next()

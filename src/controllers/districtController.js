@@ -3,6 +3,7 @@ import generateRandomPassword from "../helpers/passwordGenerator";
 import { decode, encode } from "../helpers/jwtTokenizer";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 //const mailgun = require("mailgun-js");
 
@@ -27,25 +28,27 @@ class districtController {
         });
       }
 
-      const { provinceName, districtName, email, fullname } = req.body;
+      const { provincename, name, email, fullname } = req.body;
       const password = generateRandomPassword();
+      const salt = await bcrypt.genSaltSync(10);
+      const hashedPassword = await bcrypt.hashSync(password, salt);
       const districtId = uuidv4();
-
+      await districts.create({
+        id: districtId,
+        name: name,
+        provincename: provincename,
+      });
       await users.create({
         id: uuidv4(),
         fullname,
         email,
-        password,
-        isActive: "INACTIVE",
+        password:hashedPassword,
+        isActive: false,
         role: "DistrictUser",
         districtId,
       });
 
-      await districts.create({
-        id: districtId,
-        name: districtName,
-        provincename: provinceName,
-      });
+     
       const token = await encode({ email });
 
       const mail = nodemailer.createTransport({

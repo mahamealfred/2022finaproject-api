@@ -10,7 +10,7 @@ import nodemailer from "nodemailer";
 //const mailgun = require("mailgun-js");
 dotenv.config();
 
-const { users,districts,schools } = Models;
+const { users, districts, schools } = Models;
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 class authController {
@@ -23,59 +23,43 @@ class authController {
         });
       }
 
-      const { fullname, email, role,districtId } = req.body;
+      const { fullname, email, role, districtId } = req.body;
       // const salt = await bcrypt.genSaltSync(10);
       // const hashedPassword = await bcrypt.hashSync(password, salt);
       const password = generateRandomPassword();
-      const findDistrict=await districts.findOne({
-        where:{id:districtId}
+      const findDistrict = await districts.findOne({
+        where: { id: districtId },
       });
-      
-      if(findDistrict){
-      
+
+      if (findDistrict) {
         await users.create({
           id: uuidv4(),
           fullname,
           email,
           role,
-          isActive: "INACTIVE",
+          isActive: false,
           password,
           districtId,
-          schoolId:null
+          schoolId: null,
         });
-  
-      }
-      // else if(findSchool && findDistrict){
-      //   await users.create({
-      //     id: uuidv4(),
-      //     fullname,
-      //     email,
-      //     role,
-      //     isActive: "INACTIVE",
-      //     password,
-      //     districtId,
-      //     schoolId,
-      //   });
-       
-      // }
-      else{
+      } else {
         return res.status(404).json({
           status: 404,
           message: "Invalid credential,District not found",
         });
       }
-     
+
       const token = await encode({ email });
 
       const mail = nodemailer.createTransport({
         host: "smtp.outlook.com",
-       port: 587,
-       secure: false,
-       auth: {
-         user: "mahamealfred@outlook.com", // Your email id
-         pass: "Mahame2022", // Your password
-       },
-     });
+        port: 587,
+        secure: false,
+        auth: {
+          user: "mahamealfred@outlook.com", // Your email id
+          pass: "Mahame2022", // Your password
+        },
+      });
       const data = await mail.sendMail({
         from: "mahamealfred@outlook.com",
         to: email,
@@ -95,7 +79,7 @@ class authController {
           `,
       });
       try {
-        data.sendMail(data, function (error, body){
+        data.sendMail(data, function (error, body) {
           console.log(body);
           if (error) {
             console.log(error);
@@ -130,39 +114,50 @@ class authController {
       }
       const dbEmail = req.user.email;
       const dbPasword = req.user.password;
-     
+      const confirmed = req.user.isActive;
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
-      if (dbEmail == email) {
-        if (dbPasword == password) {
-          const userSchooldbId=req.user.schoolId;
-          const userDistrictdbId=req.user.districtId
-          const dbRole=req.user.role;
-          const token = await encode({ email,userSchooldbId,userDistrictdbId,dbRole});
-          const decodedToken=await decode(token)
-          const userSchoolId=decodedToken.userSchooldbId
-          const userDistrictId=decodedToken.userDistrictdbId
-          const Email=decodedToken.email
-          const role=decodedToken.dbRole
-          return res.status(200).json({
-            status: 200,
-            message: "User logged with Token",
-            data: {
-              user: Email,
-              role:role,
-              schoolId:userSchoolId,
-              districtId:userDistrictId,
-              token,
-             
-            },
-          });
-        
+      console.log(decreptedPassword);
+      if (confirmed === true) {
+        if (dbEmail === email) {
+          if (decreptedPassword) {
+            const userSchooldbId = req.user.schoolId;
+            const userDistrictdbId = req.user.districtId;
+            const dbRole = req.user.role;
+            const token = await encode({
+              email,
+              userSchooldbId,
+              userDistrictdbId,
+              dbRole,
+            });
+            const decodedToken = await decode(token);
+            const userSchoolId = decodedToken.userSchooldbId;
+            const userDistrictId = decodedToken.userDistrictdbId;
+            const Email = decodedToken.email;
+            const role = decodedToken.dbRole;
+            return res.status(200).json({
+              status: 200,
+              message: "User logged with Token",
+              data: {
+                user: Email,
+                role: role,
+                schoolId: userSchoolId,
+                districtId: userDistrictId,
+                token,
+              },
+            });
+          }
         }
+        return res.status(400).json({
+          status: 400,
+          message: "Password is not correct",
+        });
+      } else {
+        return res.status(400).json({
+          status: 400,
+          message: "Please active your account.",
+        });
       }
-      return res.status(400).json({
-        status: 400,
-        message: "Password is not correct",
-      });
     } catch (error) {
       return res.status(500).json({
         status: 500,
@@ -174,7 +169,7 @@ class authController {
   static async getAllUser(req, res) {
     try {
       const userData = await users.findAll({
-        include:[{model:districts},{model:schools}]
+        include: [{ model: districts }, { model: schools }],
       });
 
       res.status(200).json({
@@ -241,16 +236,9 @@ class authController {
       const { email } = await decode(token);
 
       // update status to active
-      let updatedEmail = await users.update(
-        { isActive: "ACTIVE" },
-        { where: { email } }
-      );
+      await users.update({ isActive: true }, { where: { email } });
 
-      return res.status(200).json({
-        status: 200,
-        data: updatedEmail,
-        message: "User activated successfully!",
-      });
+      return res.redirect("http://localhost:3000/");
     } catch (error) {
       return res.status(500).json({
         status: 500,
@@ -270,7 +258,7 @@ class authController {
       }
       const user = await users.findOne({ email: email });
       const token = jwt.sign(
-        { _id: user._id ,email},
+        { _id: user._id, email },
         process.env.RESET_PASSWORD_KEY,
         { expiresIn: "15m" }
       );
@@ -278,7 +266,7 @@ class authController {
       await users.update({ resetlink: token }, { where: { email: email } });
 
       const mail = nodemailer.createTransport({
-         host: "smtp.outlook.com",
+        host: "smtp.outlook.com",
         port: 587,
         secure: false,
         auth: {
@@ -305,7 +293,6 @@ class authController {
       });
       try {
         data.sendMail(data, function (error, body) {
-
           if (error) {
             console.log(error);
           } else {
@@ -327,51 +314,48 @@ class authController {
     }
   }
   static async resetPassword(req, res) {
-     
     const token = req.params.token;
     const password = req.body.password;
     //const email=to
     const payload = jwt.verify(token, process.env.RESET_PASSWORD_KEY);
-    req.user = payload; 
-    const email=req.user.email
- try {
-   const findUser=await users.findOne({
-     where:{resetlink:token}
-   })
-   if(!findUser){
-     res.status(403).json({
-       status: 403,
-       message:'Invalid Link'
-     })
-   }
-   const saltRounds=10;
-   const salt =await bcrypt.genSaltSync(saltRounds)
-   const hashedPassword=await bcrypt.hashSync(password, salt)
-    const updatedPassword=await users.update({password:hashedPassword},{
-      where:{email:{email}},
-      returning: true
-    })
-    res.status(200).json({
-      status:200,
-      message:"You have reset successful your password",
-      data:updatedPassword
-
-    });
-    return res.status(401).json({
-      status:401,
-      message:"Invalid Link, please try again"
-    })
-   
- } catch (error) {
-   return res.status(500).json({
-     status:500,
-     message:"Server error:" +error.message
-   })
- }
-  
-}
-
- 
+    req.user = payload;
+    const email = req.user.email;
+    try {
+      const findUser = await users.findOne({
+        where: { resetlink: token },
+      });
+      if (!findUser) {
+        res.status(403).json({
+          status: 403,
+          message: "Invalid Link",
+        });
+      }
+      const saltRounds = 10;
+      const salt = await bcrypt.genSaltSync(saltRounds);
+      const hashedPassword = await bcrypt.hashSync(password, salt);
+      const updatedPassword = await users.update(
+        { password: hashedPassword },
+        {
+          where: { email: { email } },
+          returning: true,
+        }
+      );
+      res.status(200).json({
+        status: 200,
+        message: "You have reset successful your password",
+        data: updatedPassword,
+      });
+      return res.status(401).json({
+        status: 401,
+        message: "Invalid Link, please try again",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: "Server error:" + error.message,
+      });
+    }
+  }
 }
 
 export default authController;

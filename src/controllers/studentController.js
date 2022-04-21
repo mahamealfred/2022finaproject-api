@@ -1,5 +1,5 @@
 import Models from "../database/models";
-import bcrypt from "bcrypt";
+import bcrypt, { hash } from "bcrypt";
 import { encode } from "../helpers/jwtTokenizer";
 import studentcoder from "../helpers/studentcoder";
 import generateRandomPassword from "../helpers/passwordGenerator";
@@ -8,18 +8,16 @@ import { decode } from "jsonwebtoken";
 import { Sequelize } from "sequelize";
 const { students, schools, users, results, exams } = Models;
 
-
 const { Op, where, cast, col } = Sequelize;
 
 class studentController {
   static async addStudent(req, res) {
     try {
-      const { firstname, lastname, email, dob, gender, level, schoolId } =
-        req.body;
+      const { firstname, lastname, dob, gender, level, schoolId } = req.body;
       // const salt = await bcrypt.genSaltSync(10);
       // const hashPassword = await bcrypt.hashSync(password, salt);
       const studentCode = await studentcoder();
-      const password = generateRandomPassword();
+
       const found = await schools.findOne({
         where: { id: schoolId },
       });
@@ -35,12 +33,10 @@ class studentController {
           firstname,
           lastname,
           studentcode: studentCode,
-          email,
           dob,
           gender,
           level,
           schoolId,
-          password,
         });
         return res.status(201).json({
           status: 201,
@@ -60,7 +56,7 @@ class studentController {
   }
   static async addStudentBySchoolUser(req, res) {
     try {
-      const { firstname, lastname, email, dob, gender, level } = req.body;
+      const { firstname, lastname, dob, gender, level } = req.body;
       const token = req.headers["token"];
       const Token = await decode(token);
       const SchoolId = Token.userSchooldbId;
@@ -68,7 +64,7 @@ class studentController {
       // const salt = await bcrypt.genSaltSync(10);
       // const hashPassword = await bcrypt.hashSync(password, salt);
       const studentCode = await studentcoder();
-      const password = generateRandomPassword();
+      //const password = generateRandomPassword();
       const found = await schools.findOne({
         where: { id: SchoolId },
       });
@@ -84,12 +80,10 @@ class studentController {
           firstname,
           lastname,
           studentcode: studentCode,
-          email,
           dob,
           gender,
           level,
           schoolId: SchoolId,
-          password,
         });
         return res.status(201).json({
           status: 201,
@@ -107,13 +101,53 @@ class studentController {
       });
     }
   }
+  static async studentSingup(req, res) {
+    try {
+      const { email, password, studentcode } = req.body;
+      const salt = await bcrypt.genSaltSync(10);
+      const hashPassword = await bcrypt.hashSync(password, salt);
+
+      const found = await students.findOne({
+        where: { studentcode: studentcode },
+      });
+      if (req.student) {
+        return res.status(400).json({
+          status: 400,
+          message: "Student with email already exist please use onather!",
+        });
+      }
+      if (found) {
+        const updatedStudent = await students.update(
+          {
+            email: email,
+            password: hashPassword,
+          },
+          { where: { studentcode: studentcode }, returning: true }
+        );
+        return res.status(200).json({
+          status: 200,
+          message: "Account Created successfull!",
+          data: updatedStudent,
+        });
+      }
+      return res.status(400).json({
+        status: 400,
+        message: "You are not authorize to create an Account",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
+  }
   static async login(req, res) {
     try {
-      const { email, studentCode, password } = req.body;
+      const { email, password } = req.body;
       if (!req.student) {
-        return res.status(404).json({
-          status: 404,
-          message: "User not found",
+        return res.status(400).json({
+          status: 400,
+          message: "Student not found",
         });
       }
       const dbEmail = req.student.email;
@@ -125,37 +159,31 @@ class studentController {
 
       const decreptedPassword = await bcrypt.compare(password, dbPasword);
 
-      if (dbEmail == email) {
-        if (dbStudentCode == studentCode) {
-          if (dbPasword == password) {
-            const data = {
-              email,
-              dbStudentCode,
-              dbStudentId,
-              fullName,
-              dbStudentLevel,
-            };
-            const token = await encode(data);
-            return res.status(200).json({
-              status: 200,
-              message: "Student logged with Token",
-              student: data,
-              token,
-            });
-          }
-          return res.status(401).json({
-            status: 401,
-            message: "Password is not correct",
+      if (dbEmail === email) {
+        if (decreptedPassword) {
+          const data = {
+            email,
+            dbStudentCode,
+            dbStudentId,
+            fullName,
+            dbStudentLevel,
+          };
+          const token = await encode(data);
+          return res.status(200).json({
+            status: 200,
+            message: "Student logged with Token",
+            student: data,
+            token,
           });
         }
         return res.status(401).json({
           status: 401,
-          message: "Incorrect Student Code",
+          message: "Password is not correct",
         });
       }
       return res.status(401).json({
         status: 401,
-        message: "Invalid Email",
+        message: "Invalid email",
       });
     } catch (error) {
       return res.status(500).json({
@@ -273,66 +301,64 @@ class studentController {
       });
     }
   }
-static async getAllStudentsNumber(req,res){
-  try {
-    const totalNumberOfStudentInPrimary=await students.count({
-      where:{level:"P6"}
-    })
-    const totalNumberOfMaleStudentInPrimary=await students.count({
-      where:{level:"P6",gender:"male"}
-    })
-    const totalNumberOfFemaleStudentInPrimary=await students.count({
-      where:{level:"P6",gender:"female"}
-    })
-    const totalNumberOfStudentInOrdinaryLevel=await students.count({
-      where:{level:"S3"}
-    })
-    const totalNumberOfMaleStudentInOrdinaryLevel=await students.count({
-      where:{level:"S3",gender:"male"}
-    })
-    const totalNumberOfFemaleStudentInOrdinaryLevel=await students.count({
-      where:{level:"S3",gender:"female"}
-    })
-    const totalNumberOfAssessmentInPrimary=await exams.count({
-      where:{level:"P6"}
-    })
-    const totalNumberOfAssessmentInOrdinaryLevel=await exams.count({
-      where:{level:"S3"}
-    })
-    const numberOfSchool=await schools.count();
-    const numberofAssessment=await exams.count();
-    const data={
-      totalNumberOfStudentInPrimary,
-      totalNumberOfMaleStudentInPrimary,
-      totalNumberOfFemaleStudentInPrimary,
-      totalNumberOfAssessmentInPrimary,
-      totalNumberOfStudentInOrdinaryLevel,
-      totalNumberOfMaleStudentInOrdinaryLevel,
-      totalNumberOfFemaleStudentInOrdinaryLevel,
-      totalNumberOfAssessmentInOrdinaryLevel,
-      numberOfSchool,
-      numberofAssessment,
-
+  static async getAllStudentsNumber(req, res) {
+    try {
+      const totalNumberOfStudentInPrimary = await students.count({
+        where: { level: "P6" },
+      });
+      const totalNumberOfMaleStudentInPrimary = await students.count({
+        where: { level: "P6", gender: "male" },
+      });
+      const totalNumberOfFemaleStudentInPrimary = await students.count({
+        where: { level: "P6", gender: "female" },
+      });
+      const totalNumberOfStudentInOrdinaryLevel = await students.count({
+        where: { level: "S3" },
+      });
+      const totalNumberOfMaleStudentInOrdinaryLevel = await students.count({
+        where: { level: "S3", gender: "male" },
+      });
+      const totalNumberOfFemaleStudentInOrdinaryLevel = await students.count({
+        where: { level: "S3", gender: "female" },
+      });
+      const totalNumberOfAssessmentInPrimary = await exams.count({
+        where: { level: "P6" },
+      });
+      const totalNumberOfAssessmentInOrdinaryLevel = await exams.count({
+        where: { level: "S3" },
+      });
+      const numberOfSchool = await schools.count();
+      const numberofAssessment = await exams.count();
+      const data = {
+        totalNumberOfStudentInPrimary,
+        totalNumberOfMaleStudentInPrimary,
+        totalNumberOfFemaleStudentInPrimary,
+        totalNumberOfAssessmentInPrimary,
+        totalNumberOfStudentInOrdinaryLevel,
+        totalNumberOfMaleStudentInOrdinaryLevel,
+        totalNumberOfFemaleStudentInOrdinaryLevel,
+        totalNumberOfAssessmentInOrdinaryLevel,
+        numberOfSchool,
+        numberofAssessment,
+      };
+      return res.status(200).json({
+        status: 200,
+        message: "Retreive Data",
+        data: data,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ status: 500, message: "server error" });
     }
-    return res.status(200).json({
-      status:200,
-      message:"Retreive Data",
-      data:data
-    })
-    
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ status: 500, message: "server error" });
   }
-}
   static async getAllprimaryStudent(req, res) {
     try {
       const { count, rows: PrimaryStudents } = await students.findAndCountAll({
         where: { level: "P6" },
         include: [{ model: schools }],
       });
-      
-      const  response={count,PrimaryStudents}
+
+      const response = { count, PrimaryStudents };
       if (PrimaryStudents) {
         return res.status(200).json({
           status: 200,
@@ -350,7 +376,7 @@ static async getAllStudentsNumber(req,res){
       return res.status(500).json({ status: 500, message: "server error" });
     }
   }
-  
+
   static async getAllOrdinaryLevelStudent(req, res) {
     try {
       const { count, rows: OrdinaryLevelStudents } =
@@ -358,7 +384,7 @@ static async getAllStudentsNumber(req,res){
           where: { level: "S3" },
           include: [{ model: schools }],
         });
-        const response ={count, OrdinaryLevelStudents}
+      const response = { count, OrdinaryLevelStudents };
       if (OrdinaryLevelStudents) {
         return res.status(200).json({
           status: 200,
@@ -403,7 +429,6 @@ static async getAllStudentsNumber(req,res){
       return res.status(500).json({ status: 500, message: "server error" });
     }
   }
-
 
   static async getAllOrdinaryLevelFemaleStudent(req, res) {
     try {
@@ -548,8 +573,7 @@ static async getAllStudentsNumber(req,res){
 
   static async getSpecificStudentsNumberInSchoolByAdmin(req, res) {
     try {
-    
-      const SchoolId = req.params.id
+      const SchoolId = req.params.id;
       const totalStudentInPrimary = await students.count({
         where: { level: "P6", schoolId: SchoolId },
       });
@@ -575,30 +599,34 @@ static async getAllStudentsNumber(req,res){
         order: [["level", "ASC"]],
       });
       const primaryPercentage = await results.findAll({
-        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
-                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
-       
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+        ],
+
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
           {
             model: students,
             where: { schoolId: SchoolId, level: "P6" },
-            attributes: []
+            attributes: [],
           },
         ],
       });
       const ordinaryPercentage = await results.findAll({
-        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
-                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
-       
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+        ],
+
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
           {
             model: students,
             where: { schoolId: SchoolId, level: "S3" },
-            attributes: []
+            attributes: [],
           },
         ],
       });
@@ -612,8 +640,8 @@ static async getAllStudentsNumber(req,res){
           totalStudentInOrdinary: totalStudentInOrdinary,
           totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
           totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
-          primaryStudentPercentage:primaryPercentage,
-          ordinaryStudentPercentage:ordinaryPercentage
+          primaryStudentPercentage: primaryPercentage,
+          ordinaryStudentPercentage: ordinaryPercentage,
         },
       ];
       // console.log(data[0].ordinaryStudentPercentage[0].total)
@@ -634,7 +662,6 @@ static async getAllStudentsNumber(req,res){
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
- 
 
   static async getSpecificStudentsNumber(req, res) {
     try {
@@ -667,30 +694,34 @@ static async getAllStudentsNumber(req,res){
         order: [["level", "ASC"]],
       });
       const primaryPercentage = await results.findAll({
-        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
-                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
-       
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+        ],
+
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
           {
             model: students,
             where: { schoolId: userSchoolId, level: "P6" },
-            attributes: []
+            attributes: [],
           },
         ],
       });
       const ordinaryPercentage = await results.findAll({
-        attributes: [[Sequelize.fn("sum", Sequelize.col("marks")), "total"],
-                     [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],],
-       
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+        ],
+
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
           {
             model: students,
             where: { schoolId: userSchoolId, level: "S3" },
-            attributes: []
+            attributes: [],
           },
         ],
       });
@@ -704,8 +735,8 @@ static async getAllStudentsNumber(req,res){
           totalStudentInOrdinary: totalStudentInOrdinary,
           totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
           totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
-          primaryStudentPercentage:primaryPercentage,
-          ordinaryStudentPercentage:ordinaryPercentage
+          primaryStudentPercentage: primaryPercentage,
+          ordinaryStudentPercentage: ordinaryPercentage,
         },
       ];
       // console.log(data[0].ordinaryStudentPercentage[0].total)
@@ -726,8 +757,7 @@ static async getAllStudentsNumber(req,res){
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
- 
-  
+
   static async getSpecificStudentsNumberInDistrict(req, res) {
     try {
       //const schoolId = req.params.id;
@@ -854,25 +884,30 @@ static async getAllStudentsNumber(req,res){
   static async getMarksOfStudentsInSpecificSchool(req, res) {
     try {
       const schoolId = req.params.id;
-      const {count,rows: Results} = await results.findAndCountAll({
+      const { count, rows: Results } = await results.findAndCountAll({
         attributes: [
-          'examId', 
+          "examId",
 
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
         ],
-        group: ['examId','exam.id'],
+        group: ["examId", "exam.id"],
         raw: true,
         order: Sequelize.literal("total DESC"),
-        include: [{ model: exams, attributes: ['name','level'],},
-        {model:students, where:{schoolId:schoolId,level:"P6"},attributes: []}],
-    // }]
+        include: [
+          { model: exams, attributes: ["name", "level"] },
+          {
+            model: students,
+            where: { schoolId: schoolId, level: "P6" },
+            attributes: [],
+          },
+        ],
+        // }]
       });
       if (Results) {
-        
         return res.status(200).json({
           status: 200,
           message: "student with total",
-          count:count,
+          count: count,
           data: Results,
         });
       }
@@ -891,23 +926,27 @@ static async getAllStudentsNumber(req,res){
   static async getMarksOfStudentsInSpecificSchool(req, res) {
     try {
       const schoolId = req.params.id;
-      const  Results = await results.findAll({
+      const Results = await results.findAll({
         attributes: [
-          'examId', 
+          "examId",
 
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
-          [Sequelize.fn("COUNT", Sequelize.col("examId")), "AssessmentCount"]
+          [Sequelize.fn("COUNT", Sequelize.col("examId")), "AssessmentCount"],
         ],
-        group: ['examId','exam.id'],
+        group: ["examId", "exam.id"],
         raw: true,
         order: Sequelize.literal("total DESC"),
-        include: [{ model: exams, attributes: ['name','level'],
-        json:true
-      },
-        {model:students, where:{schoolId:schoolId,level:"P6"},attributes: []}],
-    // }]
+        include: [
+          { model: exams, attributes: ["name", "level"], json: true },
+          {
+            model: students,
+            where: { schoolId: schoolId, level: "P6" },
+            attributes: [],
+          },
+        ],
+        // }]
       });
-      
+
       if (Results) {
         console.log(Results);
         return res.status(200).json({
@@ -927,7 +966,7 @@ static async getAllStudentsNumber(req,res){
       });
     }
   }
-  
+
   static async getAllFemalePrimaryStudentToSpecificSchool(req, res) {
     try {
       //const schoolId = req.params.id;
@@ -1102,22 +1141,24 @@ static async getAllStudentsNumber(req,res){
       const modelId = req.params.id;
       const Students = await students.findAll({
         where: { schoolId: modelId },
-        include:[{model: results}]
+        include: [{ model: results }],
       });
       if (!Students) {
-       return res.status(404).json({
+        return res.status(404).json({
           status: 404,
           message: "Students not found ",
         });
       }
-     return res.status(200).json({
+      return res.status(200).json({
         status: 200,
         message: "student  Informations",
         data: Students,
       });
     } catch (error) {
       console.log(error);
-      res.status(500).json({status: 500, error:"Sever error " +error.message });
+      res
+        .status(500)
+        .json({ status: 500, error: "Sever error " + error.message });
     }
   }
   //for specific student

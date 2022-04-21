@@ -8,8 +8,9 @@ import verifyToken from "../middleware/verifyToken";
 
 const router=Router();
 
-router.post('/newStudent',CheckStudent, StudentValidation, studentController.addStudent);
-router.post('/login',CheckStudent,studentController.login);
+router.post('/singup',CheckStudent,studentController.studentSingup);
+router.post('/newStudent', StudentValidation, studentController.addStudent);
+router.post('/login',CheckStudent, studentController.login);
 router.get('/',studentController.getallStudent);
 router.get('/find/:id',studentController.findOneStudent);
 router.delete('/:id',studentController.deleteStudent);
@@ -22,7 +23,7 @@ router.get('/primarylevelFemaleStudent',studentController.getAllPrimaryLevelFema
 router.get('/primarylevelMaleStudent',studentController.getAllPrimaryLevelMaleStudent);
 router.get('/numbersinspecificschool/:id',studentController.getSpecificStudentsNumberInSchoolByAdmin);
 //to specific school user
-router.post('/register',isSchoolUser, CheckStudent,studentController.addStudentBySchoolUser);
+router.post('/register',isSchoolUser,studentController.addStudentBySchoolUser);
 router.get('/studentList',isSchoolUser,studentController.getAllStudentInSpecificSchool);
 router.get('/numbers',isSchoolUser,studentController.getSpecificStudentsNumber);
 router.get('/primaryStudents', isSchoolUser,studentController.getAllPrimaryStudentToSpecificSchool);

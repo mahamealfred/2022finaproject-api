@@ -7,7 +7,7 @@ const StudentValidation = (req, res, next) => {
     // password: Joi.string()
     //   .pattern(new RegExp("^[a-zA-Z0-9]{3,30}$"))
     //   .required(),
-    email: Joi.string().email({ minDomainSegments: 2 }).required(),
+    // email: Joi.string().email({ minDomainSegments: 2 }).required(),
     dob:Joi.date().required(),
     gender:Joi.string().min(4).required(),
     level:Joi.string().min(2).required(),

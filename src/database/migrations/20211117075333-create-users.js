@@ -17,7 +17,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       isActive: {
-        type: Sequelize.STRING,
+        type: Sequelize.BOOLEAN,
       },
       schoolId: {
         type: Sequelize.STRING,

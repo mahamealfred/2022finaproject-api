@@ -4,6 +4,7 @@ import { decode, encode } from "../helpers/jwtTokenizer";
 import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import bcrypt from "bcrypt";
 
 //const mailgun = require("mailgun-js");
 
@@ -30,6 +31,8 @@ class schoolController {
 
       const { name, sector, cell, districtId, email, fullname } = req.body;
       const password = generateRandomPassword();
+      const salt = await bcrypt.genSaltSync(10);
+      const hashedPassword = await bcrypt.hashSync(password, salt);
       const schoolId = uuidv4();
       const findDistrict = await districts.findOne({
         where: { id: districtId },
@@ -39,8 +42,8 @@ class schoolController {
           id: uuidv4(),
           fullname,
           email,
-          password,
-          isActive: "INACTIVE",
+          password:hashedPassword,
+          isActive: false,
           role: "SchoolUser",
           schoolId,
           districtId,

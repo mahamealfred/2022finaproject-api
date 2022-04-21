@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon -L --exec babel-node src/server.js"
+    "dev": "nodemon -L --exec babel-node src/server.js",
+    "seedDb": "sequelize db:seed:all",
+    "mirgation":"sequelize-cli db:migrate"
   },
   "author": "Mahame Alfred",
   "license": "ISC",
