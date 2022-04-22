@@ -234,11 +234,12 @@ class resultController {
       const Results = await results.findAll({
         attributes: [
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
         group: ["student.gender"],
         raw: true,
-        order: Sequelize.literal("total DESC"),
+        order: Sequelize.literal("total ASC"),
         include: [
           {
             model: students,
@@ -473,6 +474,7 @@ class resultController {
       const Results = await results.findAll({
         attributes: [
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
         group: ["student.id"],
