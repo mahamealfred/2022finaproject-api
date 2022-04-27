@@ -270,6 +270,7 @@ class resultController {
       const Results = await results.findAll({
         attributes: [
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
         group: ["student.gender"],
@@ -306,6 +307,7 @@ class resultController {
       const Results = await results.findAll({
         attributes: [
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
         group: ["student.gender"],
@@ -477,7 +479,7 @@ class resultController {
           [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
         ],
-        group: ["student.id"],
+        group: ["student.gender"],
         raw: true,
         order: Sequelize.literal("total DESC"),
         include: [
@@ -556,6 +558,7 @@ class resultController {
         attributes: [
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+          [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
         ],
         group: [[Sequelize.col("student.gender"), "gender"]],
@@ -592,6 +595,7 @@ class resultController {
         attributes: [
           [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
           [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+          [Sequelize.fn("COUNT", Sequelize.col("studentId")), "studentCount"],
           [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
         ],
         group: [[Sequelize.col("student.gender"), "gender"]],
@@ -936,6 +940,76 @@ class resultController {
       return res
         .status(500)
         .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+  static async getPrimaryLevelStudentsResult(req, res) {
+    try {
+     
+      const Results = await results.findAll({
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+        ],
+        group: ["student.id"],
+        raw: true,
+        order: Sequelize.literal("total ASC"),
+        include: [
+          {
+            model: students,
+            where: { level: "P6" },
+            attributes: ["id",'firstname','lastname'],
+          },
+        ],
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "All primary Students Percentage",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: error.message });
+    }
+  }
+  static async getOrdinaryLevelStudentsResult(req, res) {
+    try {
+     
+      const Results = await results.findAll({
+        attributes: [
+          [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+          [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+        ],
+        group: ["student.id"],
+        raw: true,
+        order: Sequelize.literal("total ASC"),
+        include: [
+          {
+            model: students,
+            where: { level: "S3" },
+            attributes: ["id",'firstname','lastname'],
+          },
+        ],
+      });
+      if (Results) {
+        console.log(Results);
+        return res.status(200).json({
+          status: 200,
+          message: "All Ordinary Level Students Percentage",
+          data: Results,
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "No Data Found",
+      });
+    } catch (error) {
+      res.status(500).json({ status: 500, message: error.message });
     }
   }
 }
