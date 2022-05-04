@@ -37,4 +37,15 @@ router.get('/primaryassessementsanalysis/:id',resultController.getDifferentInPer
 router.get('/ordinaryassessmentsanalysis/:id',resultController.getDifferentInPerformanceForOrdinaryLevlStudentByAdmin);
 router.get('/getprimarylevelstudentsresults',resultController.getPrimaryLevelStudentsResult);
 router.get('/getordinarylevelstudentsresults',resultController.getOrdinaryLevelStudentsResult);
+router.get('/primarylevelstudentsresults',resultController.getPrimaryLevelResult);
+router.get('/ordinarylevelstudentsresults',resultController.getOrdinaryLevelResult);
+//distrct user
+router.get('/districtresultsbasedongender',resultController.getPercentageResultBasedOnGenderInPrimaryByDistrictUser);
+router.get('/ordinarydistrictresultbasedgender',resultController.getPercentageResultBasedOnGenderInOrdinaryByDistrictUser);
+router.get('/primarystudentresultsindistrict',resultController.getPrimaryLevelStudentsResultByDistrictUser);
+router.get('/ordinarylevelresultsindistrict',resultController.getOrdinaryLevelStudentsResultByDistrictUser);
+router.get('/ordinarylevelresultsinallassessmentbydistrictuser',resultController.getPercentageResultOfOrdinaryStudentsInAllAssessmentByDistrictUser);
+router.get('/primarylevelresultsinallassessmentbydistrictuser',resultController.getPercentageResultOfPriamryStudentsInAllAssessmentByDistrictUser);
+router.get('/primaryschoolperformanceindistrict',resultController.getPrimarySchoolPerformanceByDistrictUser);
+router.get('/ordinarylevelschoolperformanceindistrict',resultController.getOrdinaryLevelSchoolPerformanceByDistrictUser);
 export default router;

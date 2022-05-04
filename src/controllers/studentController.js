@@ -6,6 +6,7 @@ import generateRandomPassword from "../helpers/passwordGenerator";
 import { v4 as uuidv4 } from "uuid";
 import { decode } from "jsonwebtoken";
 import { Sequelize } from "sequelize";
+import { json } from "body-parser";
 const { students, schools, users, results, exams } = Models;
 
 const { Op, where, cast, col } = Sequelize;
@@ -663,6 +664,137 @@ class studentController {
     }
   }
 
+  static async getSpecificDistrictStudentsNumber(req, res) {
+    try {
+      //const schoolId = req.params.id;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const DistrictId = Token.userDistrictdbId;
+      const totalStudentInPrimary = await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+          where:{level:"P6"}
+        }
+      });
+      const totalMaleStudentInPrimary = await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+          where:{gender:"male",level:"P6"}
+        }
+      });
+      const totalFemaleStudentInPrimary = await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+        where: { gender: "female", level: "P6"},}
+      });
+      const totalStudentInOrdinary = await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+        where: { level: "S3" },}
+      });
+      const totalMaleStudentInOrdinary = await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+        where: { gender: "male", level: "S3" },}
+      });
+      const totalFemaleStudentInOrdinary = await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+        where: { gender: "female", level: "S3"},}
+      });
+      const count =await schools.count({
+        where: {  districtId: DistrictId },
+        include:{
+          model:students,
+        }
+      });
+      const findSchool=await schools.findAll({
+        where:{districtId:DistrictId}
+      })
+     
+      if (findSchool) {
+        req.school = findSchool
+       
+     }
+     let schlId=[]
+     for(const i in req.school){
+       schlId=req.school[i].id
+      
+     }
+   
+    const primaryPercentage = await results.findAll({
+      attributes: [
+        [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+        [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+      ],
+
+      raw: true,
+      order: Sequelize.literal("total DESC"),
+      include: [
+        {
+          model: students,
+          where: {schoolId:schlId,  level: "P6" },
+          attributes: [],
+        },
+      ],
+    });
+    const ordinaryPercentage = await results.findAll({
+      attributes: [
+        [Sequelize.fn("sum", Sequelize.col("marks")), "total"],
+        [Sequelize.fn("COUNT", Sequelize.col("marks")), "AssessmentCount"],
+      ],
+
+      raw: true,
+      order: Sequelize.literal("total DESC"),
+      include: [
+        {
+          model: students,
+          where: {schoolId:schlId,  level: "S3" },
+          attributes: [],
+        },
+      ],
+    });
+    
+    const data = [
+      {
+        totalStudent: count,
+        totalStudentInPrimary: totalStudentInPrimary,
+        totalMaleStudentInPrimary: totalMaleStudentInPrimary,
+        totalFemaleStudentInPrimary: totalFemaleStudentInPrimary,
+        totalStudentInOrdinary: totalStudentInOrdinary,
+        totalMaleStudentInOrdinary: totalMaleStudentInOrdinary,
+        totalFemaleStudentInOrdinary: totalFemaleStudentInOrdinary,
+        primaryStudentPercentage: primaryPercentage,
+        ordinaryStudentPercentage: ordinaryPercentage,
+      },
+    ];
+    // console.log(data[0].ordinaryStudentPercentage[0].total)
+    if (count ) {
+      return res.status(200).json({
+        status: 200,
+        message: "Number of students ",
+        data: data 
+      });
+    }
+    return res.status(200).json({
+      status: 200,
+      message: "No Student found",
+    });
+    
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ status: 500, message: "server error:" + error.message });
+    }
+  }
+
+
   static async getSpecificStudentsNumber(req, res) {
     try {
       //const schoolId = req.params.id;
@@ -1159,6 +1291,40 @@ class studentController {
       res
         .status(500)
         .json({ status: 500, error: "Sever error " + error.message });
+    }
+  }
+  static async search(req, res) {
+    try {
+      const { searchKey } = req.query;
+      const searchQuery = [
+        where(cast(col("students.firstname"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("students.lastname"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("students.studentcode"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("students.level"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+      ];
+
+      const found = await students.findAll({
+        where: { [Op.or]: searchQuery },
+      });
+
+      return res.status(200).json({
+        status: 200,
+        found,
+        message: "Search Complete",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
     }
   }
   //for specific student

@@ -16,4 +16,5 @@ router.get('/examsbylevel',isStudent,examsController.getExamsByLevel);
 router.get('/examsbylevel/:id',isStudent,examsController.getExamsAndQuestionById);
 router.get('/primaryexams',examsController.getPrimaryExams);
 router.get('/ordinarylevelexams',examsController.getOrdinaryExams);
+router.get('/search',examsController.search);
 export default router;

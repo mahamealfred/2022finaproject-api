@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import { decode } from "../helpers/jwtTokenizer";
 
 const { exams, questions } = Models;
+import { Sequelize } from "sequelize";
 
+const { Op, where, cast, col } = Sequelize;
 class examsController {
   static async addExam(req, res) {
     try {
@@ -251,7 +253,35 @@ static async getOrdinaryExams(req,res){
     .json({ status: 500, message: "server error:" + error.message });
   }
 }
+static async search(req, res) {
+  try {
+    const { searchKey } = req.query;
+    const searchQuery = [
+      where(cast(col("exams.name"), "varchar"), {
+        [Op.like]: `%${searchKey}%`,
+      }),
+      where(cast(col("exams.subject"), "varchar"), {
+        [Op.like]: `%${searchKey}%`,
+      }),
+     
+    ];
 
+    const found = await exams.findAll({
+      where: { [Op.or]: searchQuery },
+    });
+
+    return res.status(200).json({
+      status: 200,
+      found,
+      message: "Search Complete",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+    });
+  }
+}
 
 }
 

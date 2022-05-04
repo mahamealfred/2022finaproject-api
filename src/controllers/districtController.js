@@ -5,6 +5,9 @@ import { v4 as uuidv4 } from "uuid";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import { Sequelize } from "sequelize";
+
+const { Op, where, cast, col } = Sequelize;
 //const mailgun = require("mailgun-js");
 
 dotenv.config();
@@ -231,7 +234,35 @@ class districtController {
       res.status(500).json({ status: 500, message: "server error" });
     }
   }
+  static async search(req, res) {
+    try {
+      const { searchKey } = req.query;
+      const searchQuery = [
+        where(cast(col("districts.name"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+        where(cast(col("districts.provincename"), "varchar"), {
+          [Op.like]: `%${searchKey}%`,
+        }),
+       
+      ];
 
+      const found = await schools.findAll({
+        where: { [Op.or]: searchQuery },
+      });
+
+      return res.status(200).json({
+        status: 200,
+        found,
+        message: "Search Complete",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
+  }
  
   
 }

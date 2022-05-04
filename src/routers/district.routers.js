@@ -12,5 +12,5 @@ router.get('/',districtController.getAllDistrict);
 // district user
 router.get('/getAllSchool',isDistrictUser,districtController.getAllSchoolToSpecificDistrict);
 router.get('/getAllStudent/:id',isDistrictUser,districtController.getAllStudentToSchoolInSpecificDistrict);
-
+router.get('/search',districtController.search);
 export default router;

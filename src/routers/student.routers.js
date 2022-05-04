@@ -36,9 +36,11 @@ router.get('/specificSchool/search',isSchoolUser,studentController.search);
 //to a specific distric user
 router.get('/search',isDistrictUser,studentController.search);
 router.get('/studentsmarks/:id',studentController.getMarksOfStudentsInSpecificSchool);
+router.get('/districtanalytics',studentController.getSpecificDistrictStudentsNumber);
 
 //admin
 router.get('/studentnumbers',studentController.getAllStudentsNumber);
 router.get('/schoolId/:id',studentController.getStudentsBySchoolId);
+router.get('/search',studentController.search);
 
 export default router;

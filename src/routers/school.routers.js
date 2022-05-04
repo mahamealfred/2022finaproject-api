@@ -11,5 +11,7 @@ router.get('/',schoolController.getAllSchool);
 router.get('/find/:id',schoolController.findOneSchool);
 router.delete('/:id',schoolController.deleteSchool);
 router.patch('/:id',schoolController.updateSchool);
+///schools/search?searchKey={searchKey}
+router.get('/search',schoolController.search);
 
 export default router;
