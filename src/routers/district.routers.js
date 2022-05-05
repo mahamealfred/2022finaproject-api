@@ -9,6 +9,7 @@ const router=Router();
 
 router.post('/addDistrict',CheckDistrict,CheckUser, districtController.addDistrict);
 router.get('/',districtController.getAllDistrict);
+router.get('/districtbyid/:id',districtController.getDistrictById);
 // district user
 router.get('/getAllSchool',isDistrictUser,districtController.getAllSchoolToSpecificDistrict);
 router.get('/getAllStudent/:id',isDistrictUser,districtController.getAllStudentToSchoolInSpecificDistrict);

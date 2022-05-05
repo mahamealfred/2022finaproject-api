@@ -48,4 +48,5 @@ router.get('/ordinarylevelresultsinallassessmentbydistrictuser',resultController
 router.get('/primarylevelresultsinallassessmentbydistrictuser',resultController.getPercentageResultOfPriamryStudentsInAllAssessmentByDistrictUser);
 router.get('/primaryschoolperformanceindistrict',resultController.getPrimarySchoolPerformanceByDistrictUser);
 router.get('/ordinarylevelschoolperformanceindistrict',resultController.getOrdinaryLevelSchoolPerformanceByDistrictUser);
+
 export default router;

@@ -136,6 +136,29 @@ class schoolController {
       res.status(500).json({ status: 500, message: "server error" });
     }
   }
+  static async getAllSchoolByDistrictUser(req, res) {
+    try {
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const DistrictId = Token.userDistrictdbId;
+      const { count, rows: schoolsData } = await schools.findAndCountAll({
+        where:{districtId:DistrictId},
+        order: [["name", "ASC"]],
+        include: [{model:districts}]
+      });
+      if (schoolsData) {
+        return res.status(200).json({
+          status: 200,
+          message: "All School",
+          count: count,
+          data: schoolsData,
+        });
+      }
+      return res.status(404).json({ status: 404, message: "No school found" });
+    } catch (error) {
+      res.status(500).json({ status: 500, message:error.message });
+    }
+  }
   static async getAllSchoolToSpecificDistrict(req, res) {
     try {
       const { count, rows: schoolsData } = await schools.findAndCountAll();
@@ -178,7 +201,7 @@ class schoolController {
         message: "School not found",
       });
     } catch (error) {
-      return res.status(500).json({ status: 500, message: "server  error" });
+      return res.status(500).json({ status: 500, message: error.message});
     }
   }
 
@@ -203,6 +226,30 @@ class schoolController {
       });
     } catch (error) {
       res.status(500).json({ status: 500, message: "server error" });
+    }
+  }
+  
+  static async getSchoolById(req,res){
+    try {
+      const SchoolId=req.params.id;
+      const school=await schools.findOne({
+        where:{id:SchoolId}
+      });
+      if(school){
+        return res.status(200).json({
+          status:200,
+          data:school
+        });
+      }
+      return res.status(400).json({
+          status:400,
+          message:"School Not Found"
+        });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
     }
   }
   static async findOneSchool(req, res) {

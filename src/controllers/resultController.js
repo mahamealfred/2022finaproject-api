@@ -1158,7 +1158,7 @@ class resultController {
               [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
             ],
             raw: true,
-            order: Sequelize.literal("total ASCE"),
+            order: Sequelize.literal("avarage DESC"),
           },
           {
             model: schools,
@@ -1203,7 +1203,7 @@ class resultController {
               [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
             ],
             raw: true,
-            order: Sequelize.literal("total ASCE"),
+            order: Sequelize.literal("total ASC"),
           },
           {
             model: schools,
@@ -1241,7 +1241,7 @@ class resultController {
           [Sequelize.fn("AVG", Sequelize.col("marks")), "avarage"],
         ],
         raw: true,
-        order: Sequelize.literal("total DESC"),
+        order: Sequelize.literal("avarage ASC"),
         group: [ "studentId","student.id"],
         include: [
           {

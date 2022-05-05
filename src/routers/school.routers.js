@@ -11,7 +11,10 @@ router.get('/',schoolController.getAllSchool);
 router.get('/find/:id',schoolController.findOneSchool);
 router.delete('/:id',schoolController.deleteSchool);
 router.patch('/:id',schoolController.updateSchool);
+router.get('/schoolbyid/:id',schoolController.getSchoolById);
 ///schools/search?searchKey={searchKey}
 router.get('/search',schoolController.search);
+//district user
+router.get('/schoolsinspecificdistrict',schoolController.getAllSchoolByDistrictUser);
 
 export default router;

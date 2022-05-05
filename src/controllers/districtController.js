@@ -264,7 +264,29 @@ class districtController {
     }
   }
  
-  
+  static async getDistrictById(req,res){
+    try {
+      const DistrictId=req.params.id;
+      const district=await districts.findOne({
+        where:{id:DistrictId}
+      });
+      if(district){
+        return res.status(200).json({
+          status:200,
+          data:district
+        });
+      }
+      return res.status(400).json({
+          status:400,
+          message:"District Not Found"
+        });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default districtController;
