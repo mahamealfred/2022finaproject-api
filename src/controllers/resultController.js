@@ -1187,6 +1187,7 @@ class resultController {
         .json({ status: 500, message: "server error:" + error.message });
     }
   }
+  
   static async getTopOrdinarySchool(req, res) {
     try {
       const Results = await students.findAll({
@@ -1489,12 +1490,12 @@ class resultController {
         ],
         group: ["student.id"],
         raw: true,
-        order: Sequelize.literal("total ASC"),
+        order: Sequelize.literal("total DESC"),
         include: [
           {
             model: students,
             where: { level: "P6" },
-            attributes: ["id",'firstname','lastname'],
+            attributes: ["id",'firstname','lastname','studentcode','gender','level'],
           },
         ],
       });
@@ -1524,13 +1525,14 @@ class resultController {
         ],
         group: ["student.id"],
         raw: true,
-        order: Sequelize.literal("total ASC"),
+        order: Sequelize.literal("total DESC"),
         include: [
           {
             model: students,
             where: { level: "S3" },
-            attributes: ["id",'firstname','lastname'],
+            attributes: ["id",'firstname','lastname','studentcode','gender','level'],
           },
+
         ],
       });
       if (Results) {

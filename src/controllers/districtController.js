@@ -33,6 +33,7 @@ class districtController {
 
       const { provincename, name, email, fullname } = req.body;
       const password = generateRandomPassword();
+      console.log("District user password:"+password);
       const salt = await bcrypt.genSaltSync(10);
       const hashedPassword = await bcrypt.hashSync(password, salt);
       const districtId = uuidv4();
@@ -46,7 +47,7 @@ class districtController {
         fullname,
         email,
         password:hashedPassword,
-        isActive: false,
+        isActive: true,
         role: "DistrictUser",
         districtId,
       });
@@ -54,45 +55,45 @@ class districtController {
      
       const token = await encode({ email });
 
-      const mail = nodemailer.createTransport({
-        host: "smtp.outlook.com",
-        port: 587,
-        secure: false,
-        auth: {
-          user: "mahamealfred@outlook.com", // Your email id
-          pass: "Mahame2022", // Your password
-        },
-      });
-      const data = await mail.sendMail({
-        from: "mahamealfred@outlook.com",
-        to: email,
-        subject: "REB-QualityEducation Activation Email.",
-        text: `
-          Hello, Thanks for registering on our site.
-          Please copy and past the address bellow to activate your account.
-          http://${process.env.CLIENT_URL}/auth/activate-email/${token}
-          `,
-        html: `
-          <h1>Hello ${fullname},</h1>
-          <p>Thanks for registering on our site.</p>
-          <p>Please click the link below to activate your account.</p>
-          <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
-          <p>Please click the link below to reset your password. Your current password is :</p><h2>${password}</h2>
-          <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">Reset your password.</a>
-          `,
-      });
-      try {
-        data.sendMail(data, function (error, body) {
-          console.log(body);
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Email sent successful");
-          }
-        });
-      } catch (error) {
-        console.log("something want wrong ");
-      }
+      // const mail = nodemailer.createTransport({
+      //   host: "smtp.outlook.com",
+      //   port: 587,
+      //   secure: false,
+      //   auth: {
+      //     user: "mahamealfred@outlook.com", // Your email id
+      //     pass: "Mahame2022", // Your password
+      //   },
+      // });
+      // const data = await mail.sendMail({
+      //   from: "mahamealfred@outlook.com",
+      //   to: email,
+      //   subject: "REB-QualityEducation Activation Email.",
+      //   text: `
+      //     Hello, Thanks for registering on our site.
+      //     Please copy and past the address bellow to activate your account.
+      //     http://${process.env.CLIENT_URL}/auth/activate-email/${token}
+      //     `,
+      //   html: `
+      //     <h1>Hello ${fullname},</h1>
+      //     <p>Thanks for registering on our site.</p>
+      //     <p>Please click the link below to activate your account.</p>
+      //     <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
+      //     <p>Please click the link below to reset your password. Your current password is :</p><h2>${password}</h2>
+      //     <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">Reset your password.</a>
+      //     `,
+      // });
+      // try {
+      //   data.sendMail(data, function (error, body) {
+      //     console.log(body);
+      //     if (error) {
+      //       console.log(error);
+      //     } else {
+      //       console.log("Email sent successful");
+      //     }
+      //   });
+      // } catch (error) {
+      //   console.log("something want wrong ");
+      // }
 
       return res.status(200).json({
         status: 200,

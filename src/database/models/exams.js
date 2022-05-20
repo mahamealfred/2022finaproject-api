@@ -27,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     subject: DataTypes.STRING,
     level: DataTypes.STRING,
-    startDate: DataTypes.DATE
+    startDate: DataTypes.DATE,
+    endDate:DataTypes.DATE
   }, {
     sequelize,
     modelName: 'exams',

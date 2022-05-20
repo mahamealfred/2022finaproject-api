@@ -15,13 +15,14 @@ class examsController {
           message: "Exam with this name already exist, please use onather!",
         });
       } 
-      const { name, startDate, subject,level } = req.body;
+      const { name, startDate,endDate, subject,level } = req.body;
       const examId = uuidv4();
       await exams.create({
         id: examId,
         name,
         startDate,
         subject,
+        endDate,
         level
       });
      
@@ -60,7 +61,7 @@ class examsController {
 
   static async updateExam(req, res) {
     try {
-      const { name, subject, startDate,level } = req.body;
+      const { name, subject, startDate,endDate,level } = req.body;
       const { id } = req.params;
       const found = await exams.findOne({
         where: { id },
@@ -70,7 +71,8 @@ class examsController {
           name,
           subject,
           level,
-          startDate
+          startDate,
+          endDate
          } , {
           where: {id},
           returning: true,

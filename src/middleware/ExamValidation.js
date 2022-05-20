@@ -6,6 +6,7 @@ const ExamValidation = (req, res, next) => {
     subject: Joi.string().min(6).required(),
     level: Joi.string().min(2).required(),
     startDate:Joi.date().required(),
+    endDate:Joi.date().required(),
      
   });
 
