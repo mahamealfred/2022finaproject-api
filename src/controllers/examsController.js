@@ -17,7 +17,7 @@ class examsController {
       } 
       const { name, startDate,endDate, subject,level } = req.body;
       const examId = uuidv4();
-      await exams.create({
+      const data=await exams.create({
         id: examId,
         name,
         startDate,
@@ -29,6 +29,7 @@ class examsController {
       return res.status(200).json({
         status: 200,
         message: "Exam have been added",
+        data: data
       });
     } catch (error) {
       return res.status(500).json({

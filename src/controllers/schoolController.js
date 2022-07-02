@@ -31,7 +31,6 @@ class schoolController {
           message: "School with this name already exist, please use anther!",
         });
       }
-
       const { name, sector, cell, districtId, email, fullname } = req.body;
       const password = generateRandomPassword();
       console.log("school user password:"+password)
@@ -103,7 +102,110 @@ class schoolController {
         // }
         return res.status(200).json({
           status: 200,
-          message: "School have been added",
+          message: "The School have been Successfuly Added",
+        });
+      }
+      return res.status(404).json({
+        status: 404,
+        message: "District not found, Please select correct district.",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.message,
+      });
+    }
+  }
+  static async addSchoolByDistricUser(req, res) {
+    try {
+      if (req.user) {
+        return res.status(400).json({
+          status: 400,
+          message: "User with email already exist please use anther!",
+        });
+      }
+
+      if (req.school) {
+        return res.status(400).json({
+          status: 400,
+          message: "School with this name already exist, please use anther!",
+        });
+      }
+      const { name, sector, cell, email, fullname } = req.body;
+      const token = req.headers["token"];
+      const Token = await decode(token);
+      const DistrictId = Token.userDistrictdbId;
+      const password = generateRandomPassword();
+      console.log("school user password:"+password)
+      const salt = await bcrypt.genSaltSync(10);
+      const hashedPassword = await bcrypt.hashSync(password, salt);
+      const schoolId = uuidv4();
+      const findDistrict = await districts.findOne({
+        where: { id: DistrictId },
+      });
+      if (findDistrict) {
+        await users.create({
+          id: uuidv4(),
+          fullname,
+          email,
+          password:hashedPassword,
+          isActive: true,
+          role: "SchoolUser",
+          schoolId,
+          districtId,
+        });
+
+        await schools.create({
+          id: schoolId,
+          name,
+          districtId:DistrictId,
+          sector,
+          cell,
+        });
+        
+        const token = await encode({ email });
+        // const mail = nodemailer.createTransport({
+        //   host: "smtp.outlook.com",
+        //   port: 587,
+        //   secure: false,
+        //   auth: {
+        //     user: "mahamealfred@outlook.com", // Your email id
+        //     pass: "Mahame2022", // Your password
+        //   },
+        // });
+        // const data = await mail.sendMail({
+        //   from: "mahamealfred@outlook.com",
+        //   to: email,
+        //   subject: "REB-QualityEducation Activation Email.",
+        //   text: `
+        //     Hello, Thanks for registering on our site.
+        //     Please copy and past the address bellow to activate your account.
+        //     http://${process.env.CLIENT_URL}/auth/activate-email/${token}
+        //     `,
+        //   html: `
+        //     <h1>Hello ${fullname},</h1>
+        //     <p>Thanks for registering on our site.</p>
+        //     <p>Please click the link below to activate your account.</p>
+        //     <a href="http://${process.env.CLIENT_URL}/auth/activate-email/${token}">Activate your account.</a>
+        //     <p>Please click the link below to reset your password. Your current password is :</p><h2>${password}</h2>
+        //     <a href="http://${process.env.CLIENT_URL}/auth/reset-password/${token}">Reset your password.</a>
+        //     `,
+        // });
+        // try {
+        //   data.sendMail(data, function (error, body) {
+        //     console.log(body);
+        //     if (error) {
+        //       console.log(error);
+        //     } else {
+        //       console.log("Email sent successful");
+        //     }
+        //   });
+        // } catch (error) {
+        //   console.log("something want wrong ");
+        // }
+        return res.status(200).json({
+          status: 200,
+          message: "The School have been Successfuly Added",
         });
       }
       return res.status(404).json({
@@ -192,7 +294,7 @@ class schoolController {
         });
         return res.status(200).json({
           status: 200,
-          message: "School updated successfull!",
+          message: "The school have been successfull updated.",
           data: updatedSchool,
         });
       }

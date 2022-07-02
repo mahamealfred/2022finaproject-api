@@ -97,7 +97,7 @@ class districtController {
 
       return res.status(200).json({
         status: 200,
-        message: "District have been created Successfully!",
+        message: "District have been Successfuly Added!",
       });
     } catch (error) {
       return res.status(500).json({
